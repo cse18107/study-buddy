@@ -1,5 +1,5 @@
 import React from "react";
-import {Card} from "@/components/ui/card"; // Removed CardContent since we are using custom layout
+import {Card} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,27 +45,30 @@ const ModernCard: React.FC<ModernCardProps> = ({
   return (
     <Card
       className="
-        w-full max-w-sm mx-auto max-h-[284px] sm:h-[450px]
-        bg-gray-900/80 backdrop-blur-lg
-        border border-gray-700/50 rounded-lg
-        shadow-2xl overflow-hidden
-        transition-all duration-500
-        hover:shadow-3xl hover:scale-[1.02]
-        group relative p-0 /* p-0 removes any inherited padding */
+        w-full max-w-sm mx-auto h-[320px] sm:h-[380px]
+        bg-white
+        border-2 border-slate-100
+        rounded-2xl
+        shadow-lg
+        overflow-hidden
+        transition-all duration-300
+        hover:shadow-2xl hover:scale-[1.02] hover:border-purple-200
+        group relative p-0
+        cursor-pointer
       "
     >
-      {/* 1. Full-Bleed Image Background */}
+      {/* Full-Bleed Image Background */}
       <img
         src={imageSrc}
         alt={name}
         className="
           w-full h-full object-cover
           transition-transform duration-700
-          group-hover:scale-110 group-hover:brightness-[1.1]
+          group-hover:scale-110 group-hover:brightness-105
         "
       />
 
-      {/* 2. Primary Absolute Overlay Container (for all UI elements) */}
+      {/* Overlay Container */}
       <div className="absolute inset-0 z-10 flex flex-col justify-between">
         {/* Top Section: Dropdown Menu */}
         <div className="p-4 flex justify-end">
@@ -75,28 +78,30 @@ const ModernCard: React.FC<ModernCardProps> = ({
                 <button
                   className="
                     p-2 rounded-full
-                    bg-black/50 backdrop-blur-sm
-                    text-gray-300 hover:text-[#eeffab]
+                    bg-white/90 backdrop-blur-sm
+                    text-slate-700 hover:text-purple-600
                     transition-all duration-300
-                    hover:bg-black/70
-                    outline-none focus:ring-2 focus:ring-[#eeffab]
+                    hover:bg-white
+                    outline-none focus:ring-2 focus:ring-purple-500
+                    shadow-md hover:shadow-lg
                   "
                   aria-label="Menu"
                 >
                   <MoreHorizontal className="w-5 h-5" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#252525] border-[#252525] text-white shadow-xl rounded-xl p-1">
+              <DropdownMenuContent className="bg-white border-slate-200 shadow-xl rounded-xl p-1">
                 {items.map((item, index) => (
                   <DropdownMenuItem
                     key={index}
                     onClick={item.onClick}
                     className={`
-                      cursor-pointer flex items-center gap-3 px-3 py-2
+                      cursor-pointer flex items-center gap-3 px-3 py-2.5 rounded-lg
+                      transition-colors duration-200
                       ${
                         item.isDestructive
-                          ? "text-red-400 hover:bg-red-900/40"
-                          : "hover:bg-purple-600/20"
+                          ? "text-red-600 hover:bg-red-50"
+                          : "text-slate-700 hover:bg-purple-50 hover:text-purple-700"
                       }
                     `}
                   >
@@ -112,28 +117,33 @@ const ModernCard: React.FC<ModernCardProps> = ({
         {/* Bottom Section: Text Content Overlay */}
         <div
           className="
-            p-6 pt-16 /* Use pt-16 to ensure gradient starts high */
-            bg-gradient-to-t from-black/90 via-black/60 to-transparent
-            text-white
+            p-6 pt-20
+            bg-gradient-to-t from-white via-white/95 to-transparent
+            backdrop-blur-sm
           "
         >
           {/* Name */}
           <h3
             className="
-              text-3xl font-extrabold mb-1 tracking-tight
-              drop-shadow-lg /* Text shadow for contrast */
-              group-hover:text-[#eeffab] transition-colors duration-500
+              text-2xl font-bold mb-2 tracking-tight
+              text-slate-900
+              drop-shadow-sm
+              group-hover:text-purple-600 transition-colors duration-300
+              font-heading
             "
           >
             {name}
           </h3>
 
           {/* Description */}
-          <p className="text-sm text-gray-300 leading-snug line-clamp-3">
+          <p className="text-sm text-slate-600 leading-snug line-clamp-3">
             {description}
           </p>
         </div>
       </div>
+
+      {/* Decorative gradient border on hover */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10"></div>
     </Card>
   );
 };

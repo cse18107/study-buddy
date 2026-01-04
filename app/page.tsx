@@ -1,71 +1,90 @@
 'use client';
 import CreateClassroomModal from "@/components/CreateClassroomModal";
 import ModernCard from "@/components/ModernCard";
-import { EditIcon, Trash2 } from "lucide-react";
+import { EditIcon, Trash2, BookOpen, Sparkles } from "lucide-react";
 import {useRouter} from "next/navigation";
 import React from "react";
 
 export default function Home() {
 
-  const [classrooms, setClassrooms] = React.useState<any[]>([
-    // 1. The original example card (Product focus)
-    {
-      imageSrc: "./demo-classroom.jpg",
-      name: "Quantum Catalyst",
-      description:
-        "This enhanced card features modern typography, deep gradients, and full-bleed image integration for a top-tier UI experience.",
-    },
-    {
-      imageSrc: "./demo-classroom.jpg",
-      name: "Quantum Catalyst",
-      description:
-        "This enhanced card features modern typography, deep gradients, and full-bleed image integration for a top-tier UI experience.",
-    },
+  const [classrooms, setClassrooms] = React.useState<any[]>([]);
 
-    // 2. A card demonstrating the use of default 'onDelete' handler
-    {
-      imageSrc: "./demo-2-classroom.jpg",
-      name: "Code Repository v3",
-      description:
-        "A comprehensive backend solution providing seamless data integration and robust API endpoints. Optimized for modern cloud architecture.",
-    },
+  React.useEffect(() => {
+    const fetchClassrooms = async () => {
+      // Use token from localStorage if available, otherwise use the one from the provided curl (as fallback/demo)
+      const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY4NDA2MzIxfQ.OouPKm2Af39HiYdUF0LOz0GtKw_XT-tLAqSWMcN2Li8";
+      
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/classrooms", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "accept": "application/json"
+          }
+        });
 
-    // 3. A card focused on conceptual art/design (minimalist menu)
-    {
-      imageSrc: "./demo-classroom.jpg",
-      name: "Aesthetic Study 001",
-      description:
-        "Exploring the interaction between color theory and digital medium density. A deep dive into modern visual communication.",
-    },
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Fetched Classrooms:", data);
+          
+          // Map API data to UI structure
+          // Assuming API returns an array of objects with keys like 'classroomName', 'image_file', etc.
+          // adapting based on previous creation logic
+          const mappedData = Array.isArray(data) ? data.map((item: any) => ({
+            imageSrc: item.image_file ? `http://localhost:8000${item.image_file}` : "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1080&q=80", // Fallback or direct URL
+            name: item.classroomName || "Untitled Classroom",
+            description: item.description || item.subject || "No description available.",
+            // Store ID for navigation
+            id: item.classroom_id || item.id 
+          })) : [];
 
-    // 4. A card with a long description to test line clamping
-    {
-      imageSrc:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTMzMzV8MHwxfGFsbHw1fHx8fHx8fHwxNzE4OTgyMTY1&ixlib=rb-4.0.3&q=80&w=1080",
-      name: "Advanced AI Model",
-      description:
-        "This model utilizes cutting-edge transformer architecture trained on billions of parameters, specializing in natural language generation and contextual understanding. The complexity of its neural network allows for truly human-like conversation and creative output generation across various domains and languages. This is a crucial element for future interactions. The description is intentionally long to ensure line clamping functions correctly in the UI.",
-    },
+          setClassrooms(mappedData);
+        } else {
+          console.error("Failed to fetch classrooms:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching classrooms:", error);
+      }
+    };
 
-    // 5. A futuristic project card
-    {
-      imageSrc:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTMzMzV8MHwxfGFsbHw1fHx8fHx8fHwxNzE4OTgyMTY1&ixlib=rb-4.0.3&q=80&w=1080",
-      name: "Nebula Protocol",
-      description:
-        "A decentralized communication protocol built on blockchain technology, ensuring privacy and end-to-end encryption for all users globally.",
-    },
-  ]);
+    fetchClassrooms();
+  }, []);
     const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-black px-4 pt-20 md:px-10 lg:px-20">
-      {/* Top Banner */}
-      <div className="w-full h-40 md:h-60 lg:h-72 mb-10 bg-[#252525] rounded-sm"></div>
+    <div className="min-h-screen bg-background px-4 pt-8 md:px-10 lg:px-20 pb-12">
+      {/* Hero Banner with Gradient */}
+      <div className="w-full h-48 md:h-64 lg:h-80 mb-12 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 rounded-3xl shadow-xl overflow-hidden relative animate-slide-up">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+        <div className="relative h-full flex flex-col items-center justify-center text-white px-6 text-center">
+          <div className="flex items-center gap-3 mb-4 animate-bounce-in">
+            <Sparkles className="w-8 h-8 md:w-10 md:h-10 animate-pulse" />
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold font-heading">
+              Study Buddy
+            </h1>
+            <Sparkles className="w-8 h-8 md:w-10 md:h-10 animate-pulse" />
+          </div>
+          <p className="text-lg md:text-xl lg:text-2xl font-medium opacity-95 max-w-3xl">
+            Learn Smarter, Together 🚀
+          </p>
+          <p className="text-sm md:text-base mt-2 opacity-80 max-w-2xl">
+            AI-powered learning platform with interactive quizzes, progress tracking, and personalized feedback
+          </p>
+        </div>
+      </div>
 
-      {/* Heading */}
-      <div className="mb-5 text-white font-inter text-xl md:text-2xl">
-        Classrooms
+      {/* Section Header */}
+      <div className="mb-8 flex items-center justify-between animate-slide-up">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-8 bg-gradient-primary rounded-full"></div>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 font-heading">
+            Your Classrooms
+          </h2>
+          <div className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
+            {classrooms.length}
+          </div>
+        </div>
+        <BookOpen className="w-6 h-6 text-purple-500 icon-interactive hidden md:block" />
       </div>
 
       {/* Grid */}
@@ -73,42 +92,45 @@ export default function Home() {
         className="
           grid 
           pb-5
-          grid-cols-2 
-          sm:grid-cols-3 
-          md:grid-cols-4 
-          lg:grid-cols-5 
-          xl:grid-cols-6 
-          gap-4
+          grid-cols-1
+          sm:grid-cols-2 
+          md:grid-cols-3 
+          lg:grid-cols-4 
+          xl:grid-cols-5 
+          2xl:grid-cols-6
+          gap-6
+          animate-slide-up
         "
       >
         {/* Add Classroom Button */}
-
         <CreateClassroomModal />
 
-        {/* Sample Cards (repeatable) */}
+        {/* Classroom Cards */}
         {classrooms.map((item, id) => (
           <div
             key={id}
             onClick={() => {
-              router.push(`/classroom/${id}?set=learn`);
+              router.push(`/classroom/${item.id}?set=learn`);
             }}
+            className="animate-bounce-in"
+            style={{ animationDelay: `${id * 50}ms` }}
           >
             <ModernCard
-              imageSrc={item.imageSrc} // Replace with real image
+              imageSrc={item.imageSrc}
               name={item.name}
               description={item.description}
-              onDelete={() => console.log("Item deleted!")} // Handle delete
-              // Optional: Add more menu items
+              onDelete={() => console.log("Item deleted!")}
               menuItems={[
                 {
                   label: "Edit",
-                  icon: <EditIcon />,
-                  onClick: () => alert("Edit!"),
+                  icon: <EditIcon className="w-4 h-4" />,
+                  onClick: () => alert("Edit classroom"),
                 },
                 {
                   label: "Delete",
-                  icon: <Trash2 />,
-                  onClick: () => alert("Delete!"),
+                  icon: <Trash2 className="w-4 h-4" />,
+                  onClick: () => alert("Delete classroom"),
+                  isDestructive: true,
                 },
               ]}
             />

@@ -1,0 +1,217 @@
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Plus, Image as ImageIcon, Target } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+interface PracticeSession {
+  id: string;
+  name: string;
+  description: string;
+  image?: string;
+}
+
+const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails }) => {
+  const [sessions, setSessions] = useState<PracticeSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Dialog state kept for potential future "Create" implementation, 
+  // but heavily prioritizing fetching existing list
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState<string | undefined>(undefined);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchPracticeSessions = async () => {
+      const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU";
+      const classroomId = classroomDetails?.id || "7186c7de-0276-4c8c-a1b9-59b249019c29";
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/practices/classroom/${classroomId}`, {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Map API data if needed, or stick to interface. 
+          // API returns { id, title, description, file, classroom_id }
+          // UI uses { id, name, description, image }
+          // We map it here:
+          const mappedData = data.map((item: any) => ({
+            id: item.id,
+            name: item.title,
+            description: item.description,
+            image: item.file
+          }));
+          setSessions(mappedData);
+        } else {
+          console.error("Failed to fetch practice sessions");
+        }
+      } catch (error) {
+        console.error("Error fetching practice sessions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPracticeSessions();
+  }, [classroomDetails]);
+
+  const handleImageUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCreate = () => {
+    // Ideally this should POST to API, but for now just local state update as per existing code skeleton
+    // If user wants full API integration for creation, we'd add that. 
+    // Current task focus is RENDER LIST from curl.
+    const newSession: PracticeSession = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      name,
+      description,
+      image,
+    };
+
+    setSessions([newSession, ...sessions]);
+    setName("");
+    setDescription("");
+    setImage(undefined);
+    setOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Top Gradient Bar */}
+      <div className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-2" />
+
+      {/* Header */}
+      <div className="p-8 bg-white border-b border-slate-200">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+            <Target className="w-8 h-8 text-blue-500" />
+            Practice Sessions
+          </h1>
+
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl h-12 px-6 font-semibold shadow-lg">
+                <Plus className="w-5 h-5 mr-2" />
+                Create Practice Session
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="rounded-2xl max-w-lg bg-white">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-slate-900">
+                  Create Practice Session
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-4">
+                <Input
+                  placeholder="Practice session name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+
+                <Textarea
+                  placeholder="Practice session description"
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+
+                <label className="flex items-center gap-3 p-4 border-2 border-dashed rounded-xl cursor-pointer hover:border-purple-400 transition">
+                  <ImageIcon className="w-5 h-5 text-slate-500" />
+                  <span className="text-sm text-slate-600">
+                    {image ? "Image selected" : "Upload cover image"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => e.target.files && handleImageUpload(e.target.files[0])}
+                  />
+                </label>
+
+                <Button
+                  onClick={handleCreate}
+                  disabled={!name || !description}
+                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl h-11 font-semibold"
+                >
+                  Create Session
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Sessions List */}
+      <div className="p-8">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sessions.map((session) => (
+            <div
+              key={session.id}
+              className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden hover:shadow-2xl transition"
+            >
+              {session.image ? (
+                <img
+                  src={session.image}
+                  alt={session.name}
+                  className="w-full h-40 object-cover"
+                />
+              ) : (
+                <div className="h-40 bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center">
+                  <Target className="w-10 h-10 text-purple-500" />
+                </div>
+              )}
+
+              <div className="p-5">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">
+                  {session.name}
+                </h3>
+                <p className="text-sm text-slate-600 line-clamp-3">
+                  {session.description}
+                </p>
+
+                <Button
+                    onClick={() => router.push(`/classroom/${classroomDetails?.id || '1'}?set=practice&practiceid=${session.id}`)}
+                  className="mt-4 w-full bg-white border-2 border-slate-300 text-slate-700 hover:border-purple-500 hover:text-purple-700 rounded-xl font-semibold"
+                >
+                  Open Practice
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {sessions.length === 0 && (
+          <div className="text-center text-slate-500 mt-16">
+            No practice sessions created yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PracticeSessions;

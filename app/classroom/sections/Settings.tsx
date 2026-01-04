@@ -3,17 +3,8 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Switch} from "@/components/ui/switch";
-import {Save, Bell, Clock, Palette, User, Zap} from "lucide-react";
+import {Save, Bell, Clock, Palette, User, Zap, Settings as SettingsIcon, Shield} from "lucide-react";
 
-// --- Color Definitions ---
-const BG_DARK = "bg-black";
-const BG_MEDIUM = "bg-[#252525]";
-const NEON_ACCENT = "#eeffab";
-const NEON_TEXT = "text-[#eeffab]";
-const NEON_BORDER = "border-[#eeffab]";
-const NEON_HOVER = "hover:bg-[#eeffab] hover:text-black";
-
-// --- State Definition ---
 interface SettingsState {
   defaultQuizLength: "short" | "medium" | "long";
   feedbackMode: "instant" | "delayed";
@@ -29,15 +20,8 @@ const initialSettings: SettingsState = {
   enableNotifications: true,
   allowPublicProfile: false,
   emailUpdates: true,
-  defaultUsername: "CypherLearner01",
+  defaultUsername: "StudyBuddy_Learner",
 };
-
-// --- Utility Classes ---
-const fieldLabelClasses = `text-sm font-medium ${NEON_TEXT} flex items-center gap-2 mb-1`;
-const inputClasses = `
-  w-full ${BG_MEDIUM} border-2 border-black ${NEON_TEXT} 
-  placeholder-[#eeffab] placeholder-opacity-50 focus:border-[#eeffab] focus:ring-1 focus:ring-[#eeffab]
-`;
 
 const Settings = () => {
   const [settings, setSettings] = useState<SettingsState>(initialSettings);
@@ -48,222 +32,218 @@ const Settings = () => {
     setIsSaving(true);
     console.log("Saving settings:", settings);
 
-    // Simulate API save time
     setTimeout(() => {
       setIsSaving(false);
       alert("Settings saved successfully!");
     }, 1000);
   };
 
-  const handleChange = (id: keyof SettingsState, value: any) => {
-    setSettings((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+  const updateSetting = <K extends keyof SettingsState>(
+    key: K,
+    value: SettingsState[K]
+  ) => {
+    setSettings((prev) => ({...prev, [key]: value}));
   };
 
-  // Custom styling for Shadcn Switch to match the theme
-  const CustomSwitch = ({
-    id,
-    checked,
-    onCheckedChange,
-  }: {
-    id: keyof SettingsState;
-    checked: boolean;
-    onCheckedChange: (checked: boolean) => void;
-  }) => (
-    <Switch
-      id={id}
-      checked={checked}
-      onCheckedChange={onCheckedChange}
-      // Tailwind CSS overrides for Shadcn Switch
-      className={`
-        data-[state=checked]:bg-[#eeffab] 
-        data-[state=unchecked]:bg-[#252525] 
-        border border-black 
-        shadow-sm
-      `}
-      style={
-        {
-          // Ensure the thumb is always black for high contrast
-          "--tw-ring-color": NEON_ACCENT, // Focus ring
-        } as React.CSSProperties
-      }
-      // Apply black thumb style
-      thumbClassName={`
-        data-[state=unchecked]:bg-black
-        data-[state=checked]:bg-black
-        data-[state=checked]:translate-x-[22px]
-      `}
-    />
-  );
-
   return (
-    <div className={`p-8 ${BG_DARK} min-h-screen`}>
-      <form onSubmit={handleSave} className="max-w-3xl mx-auto space-y-10">
-        <h1
-          className={`text-4xl font-extrabold ${NEON_TEXT} border-b border-[#252525] pb-4`}
-        >
-          System Configuration
-        </h1>
-
-        {/* --- 1. Quiz Defaults --- */}
-        <section
-          className={`p-6 ${BG_MEDIUM} rounded-xl border border-[#252525] shadow-lg space-y-6`}
-        >
-          <h2
-            className={`text-2xl font-semibold ${NEON_TEXT} border-b border-black pb-2 flex items-center gap-3`}
-          >
-            <Zap className="w-6 h-6" /> Quiz Preferences
-          </h2>
-
-          {/* Default Quiz Length */}
-          <div>
-            <Label htmlFor="quizLength" className={fieldLabelClasses}>
-              <Clock className="w-4 h-4" /> Default Quiz Length
-            </Label>
-            {/* Using standard select for maximum color control */}
-            <select
-              id="defaultQuizLength"
-              value={settings.defaultQuizLength}
-              onChange={(e) =>
-                handleChange(
-                  "defaultQuizLength",
-                  e.target.value as "short" | "medium" | "long"
-                )
-              }
-              className={
-                inputClasses + " p-2 rounded-md appearance-none cursor-pointer"
-              }
-              style={{paddingRight: "2rem"}} // Space for default browser arrow
-            >
-              <option value="short">Short (5-8 Questions)</option>
-              <option value="medium">Medium (10-15 Questions)</option>
-              <option value="long">Long (20+ Questions)</option>
-            </select>
-          </div>
-
-          {/* Feedback Mode */}
-          <div className="flex justify-between items-center pt-2">
-            <Label htmlFor="feedbackMode" className={fieldLabelClasses}>
-              Instant Feedback (MCQ)
-            </Label>
-            <CustomSwitch
-              id="feedbackMode"
-              checked={settings.feedbackMode === "instant"}
-              onCheckedChange={(checked) =>
-                handleChange("feedbackMode", checked ? "instant" : "delayed")
-              }
-            />
-          </div>
-        </section>
-
-        {/* --- 2. Notifications --- */}
-        <section
-          className={`p-6 ${BG_MEDIUM} rounded-xl border border-[#252525] shadow-lg space-y-6`}
-        >
-          <h2
-            className={`text-2xl font-semibold ${NEON_TEXT} border-b border-black pb-2 flex items-center gap-3`}
-          >
-            <Bell className="w-6 h-6" /> Notification Settings
-          </h2>
-
-          {/* Enable System Notifications */}
-          <div className="flex justify-between items-center">
-            <Label htmlFor="enableNotifications" className={fieldLabelClasses}>
-              Enable Desktop Notifications
-            </Label>
-            <CustomSwitch
-              id="enableNotifications"
-              checked={settings.enableNotifications}
-              onCheckedChange={(checked) =>
-                handleChange("enableNotifications", checked)
-              }
-            />
-          </div>
-
-          {/* Email Updates */}
-          <div className="flex justify-between items-center">
-            <Label htmlFor="emailUpdates" className={fieldLabelClasses}>
-              Receive weekly progress reports via email
-            </Label>
-            <CustomSwitch
-              id="emailUpdates"
-              checked={settings.emailUpdates}
-              onCheckedChange={(checked) =>
-                handleChange("emailUpdates", checked)
-              }
-            />
-          </div>
-        </section>
-
-        {/* --- 3. Account Settings --- */}
-        <section
-          className={`p-6 ${BG_MEDIUM} rounded-xl border border-[#252525] shadow-lg space-y-6`}
-        >
-          <h2
-            className={`text-2xl font-semibold ${NEON_TEXT} border-b border-black pb-2 flex items-center gap-3`}
-          >
-            <User className="w-6 h-6" /> Account Details
-          </h2>
-
-          {/* Username */}
-          <div>
-            <Label htmlFor="defaultUsername" className={fieldLabelClasses}>
-              Username
-            </Label>
-            <Input
-              id="defaultUsername"
-              value={settings.defaultUsername}
-              onChange={(e) => handleChange("defaultUsername", e.target.value)}
-              className={inputClasses}
-            />
-          </div>
-
-          {/* Public Profile */}
-          <div className="flex justify-between items-center pt-2">
-            <Label htmlFor="allowPublicProfile" className={fieldLabelClasses}>
-              Allow profile visibility to other users
-            </Label>
-            <CustomSwitch
-              id="allowPublicProfile"
-              checked={settings.allowPublicProfile}
-              onCheckedChange={(checked) =>
-                handleChange("allowPublicProfile", checked)
-              }
-            />
-          </div>
-        </section>
-
-        {/* --- Save Button --- */}
-        <div className="pt-6">
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className={`
-              w-full h-12 text-lg font-bold 
-              ${NEON_HOVER} 
-              ${
-                isSaving
-                  ? "bg-[#252525] border border-black text-[#eeffab] opacity-50 cursor-not-allowed"
-                  : "bg-black border-2 " + NEON_BORDER + " " + NEON_TEXT
-              } 
-              transition-all duration-300
-            `}
-          >
-            {isSaving ? (
-              <>
-                <Zap className="w-5 h-5 mr-2 animate-pulse" /> Saving
-                Configuration...
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5 mr-2" /> Save Changes
-              </>
-            )}
-          </Button>
+    <div className="min-h-screen w-full bg-background">
+      {/* Colorful Top Bar */}
+      <div className="w-full bg-gradient-to-r from-slate-500 via-purple-500 to-indigo-500 h-2"></div>
+      
+      {/* Header */}
+      <div className="p-8 bg-white border-b border-slate-200">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3 font-heading">
+            <SettingsIcon className="w-8 h-8 text-slate-600" />
+            Settings & Preferences
+          </h1>
+          <p className="text-slate-600 mt-2">Customize your learning experience</p>
         </div>
-      </form>
+      </div>
+
+      {/* Settings Form */}
+      <div className="p-8">
+        <form onSubmit={handleSave} className="max-w-4xl mx-auto space-y-6">
+          {/* Quiz Preferences Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Zap className="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Quiz Preferences</h2>
+            </div>
+
+            <div className="space-y-4">
+              {/* Quiz Length */}
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  Default Quiz Length
+                </Label>
+                <select
+                  value={settings.defaultQuizLength}
+                  onChange={(e) =>
+                    updateSetting(
+                      "defaultQuizLength",
+                      e.target.value as "short" | "medium" | "long"
+                    )
+                  }
+                  className="w-full bg-slate-50 border-2 border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                >
+                  <option value="short">Short (5-10 questions)</option>
+                  <option value="medium">Medium (10-20 questions)</option>
+                  <option value="long">Long (20+ questions)</option>
+                </select>
+              </div>
+
+              {/* Feedback Mode */}
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  Feedback Mode
+                </Label>
+                <select
+                  value={settings.feedbackMode}
+                  onChange={(e) =>
+                    updateSetting(
+                      "feedbackMode",
+                      e.target.value as "instant" | "delayed"
+                    )
+                  }
+                  className="w-full bg-slate-50 border-2 border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                >
+                  <option value="instant">Instant (Show answers immediately)</option>
+                  <option value="delayed">Delayed (Show after completion)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Notifications Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Bell className="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Notifications</h2>
+            </div>
+
+            <div className="space-y-4">
+              {/* Enable Notifications */}
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <Label className="text-slate-900 font-medium block">
+                      Push Notifications
+                    </Label>
+                    <p className="text-sm text-slate-600">
+                      Get notified about new content and updates
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.enableNotifications}
+                  onCheckedChange={(val) =>
+                    updateSetting("enableNotifications", val)
+                  }
+                  className="data-[state=checked]:bg-purple-500"
+                />
+              </div>
+
+              {/* Email Updates */}
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <Label className="text-slate-900 font-medium block">
+                      Email Updates
+                    </Label>
+                    <p className="text-sm text-slate-600">
+                      Receive weekly progress reports via email
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.emailUpdates}
+                  onCheckedChange={(val) => updateSetting("emailUpdates", val)}
+                  className="data-[state=checked]:bg-purple-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Account Details Section */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <User className="w-5 h-5 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Account Details</h2>
+            </div>
+
+            <div className="space-y-4">
+              {/* Username */}
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Username
+                </Label>
+                <Input
+                  type="text"
+                  value={settings.defaultUsername}
+                  onChange={(e) =>
+                    updateSetting("defaultUsername", e.target.value)
+                  }
+                  placeholder="Enter your username"
+                  className="bg-slate-50 border-2 border-slate-200 text-slate-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl h-12"
+                />
+              </div>
+
+              {/* Public Profile */}
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <Label className="text-slate-900 font-medium block">
+                      Public Profile
+                    </Label>
+                    <p className="text-sm text-slate-600">
+                      Allow others to view your learning progress
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.allowPublicProfile}
+                  onCheckedChange={(val) =>
+                    updateSetting("allowPublicProfile", val)
+                  }
+                  className="data-[state=checked]:bg-purple-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={isSaving}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-8 h-12 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5 mr-2" />
+                  Save Settings
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

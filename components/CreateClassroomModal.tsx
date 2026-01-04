@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
+// import {Textarea} from "@/components/ui/textarea";
 
 // --- Type Definitions ---
 interface ClassroomFormData {
@@ -87,19 +87,20 @@ const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
 
   return (
     <div className="grid gap-2">
-      {/* Label (using the accent color) */}
-      <Label className="text-[#eeffab] flex items-center gap-2">
-        {icon} {label}
+      {/* Label */}
+      <Label className="text-slate-700 font-medium flex items-center gap-2">
+        <div className="text-purple-500">{icon}</div>
+        {label}
       </Label>
 
       <div
         className={`
-          relative w-full min-h-[100px] rounded-lg border-2 border-dashed p-4 cursor-pointer
-          transition-colors duration-200
+          relative w-full min-h-[100px] rounded-xl border-2 border-dashed p-4 cursor-pointer
+          transition-all duration-300
           ${
             isDragging
-              ? "border-[#eeffab] bg-[#252525]"
-              : "border-[#252525] hover:border-[#eeffab]/50 bg-black"
+              ? "border-purple-500 bg-purple-50 scale-105"
+              : "border-slate-300 hover:border-purple-400 hover:bg-purple-50/50 bg-white"
           }
         `}
         onDragOver={handleDragOver}
@@ -117,7 +118,7 @@ const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
 
         {file ? (
           // File Selected View
-          <div className="flex items-center justify-between text-[#eeffab] bg-[#252525] p-3 rounded-md">
+          <div className="flex items-center justify-between text-slate-700 bg-slate-100 p-3 rounded-lg border border-slate-200">
             <div className="flex items-center gap-3 truncate">
               <File className="w-5 h-5 flex-shrink-0" />
               <span className="truncate">{file.name}</span>
@@ -125,7 +126,7 @@ const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
             <Button
               type="button"
               onClick={handleRemoveFile}
-              className="p-1 h-auto bg-transparent hover:bg-black/50 text-[#eeffab] border-none"
+              className="p-1 h-auto bg-transparent hover:bg-red-50 text-slate-500 hover:text-red-600 border-none rounded transition-colors"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -133,12 +134,12 @@ const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
         ) : (
           // Default Drag/Click Prompt
           <div className="flex flex-col items-center justify-center text-center h-full">
-            <Upload className="w-6 h-6 text-[#eeffab] mb-2" />
-            <p className="text-sm text-[#eeffab] opacity-90 font-medium">
+            <Upload className="w-6 h-6 text-purple-500 mb-2" />
+            <p className="text-sm text-slate-700 font-medium">
               Drag & drop file here, or{" "}
               <span className="underline">click to select</span>
             </p>
-            <p className="text-xs text-[#eeffab] opacity-50 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               {accept.includes("image")
                 ? "Accepted: Images (.jpg, .png, .gif)"
                 : "Accepted: Documents (.pdf, .docx, etc.)"}
@@ -181,45 +182,115 @@ const CreateClassroomModal: React.FC = () => {
     setFormData((prev) => ({...prev, document: file}));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Submitting New Classroom:", formData);
 
-    // Simulate API call success
-    setTimeout(() => {
+    const apiFormData = new FormData();
+    apiFormData.append("classroomName", formData.name);
+    apiFormData.append("subject", formData.subject);
+    
+    // Note: description is currently not supported by the API
+    // apiFormData.append("description", formData.description);
+
+    if (formData.document) {
+      apiFormData.append("pdf_file", formData.document);
+    }
+    if (formData.coverImage) {
+      apiFormData.append("image_file", formData.coverImage);
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Authentication token not found. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/api/classrooms/", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "accept": "application/json",
+        },
+        body: apiFormData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
       alert(`Classroom "${formData.name}" successfully created!`);
       setIsOpen(false);
-    }, 500);
+      
+      // Reset form
+      setFormData({
+        name: "",
+        subject: "",
+        description: "",
+        coverImage: null,
+        document: null,
+      });
+
+    } catch (error) {
+      console.error("Error creating classroom:", error);
+      alert("Failed to create classroom. Please try again.");
+    }
   };
 
   // --- Utility Class Definitions ---
   const inputClasses =
-    "bg-[#252525] border-2 border-black text-[#eeffab] placeholder-[#eeffab] placeholder-opacity-50 focus:border-[#eeffab] focus:ring-1 focus:ring-[#eeffab]";
-  const iconClasses = "w-4 h-4 text-[#eeffab]";
+    "bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl transition-all";
+  const iconClasses = "w-4 h-4 text-purple-500";
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {/* Trigger Button */}
-        <Button className="bg-[#eeffab] h-full hover:bg-[#eeffab] hover:opacity-90 text-black font-semibold flex items-center gap-2 rounded-lg shadow-lg transition-all duration-300">
-          <Plus className="w-5 h-5 text-black" />
-          Create New Classroom
-        </Button>
+        {/* Trigger Button - Beautiful Gradient */}
+        <div className="
+          bg-gradient-to-br from-purple-500 to-blue-500
+          h-[320px] sm:h-[380px]
+          hover:from-purple-600 hover:to-blue-600
+          text-white font-semibold 
+          flex flex-col items-center justify-center gap-4
+          rounded-2xl shadow-lg
+          hover:shadow-2xl hover:scale-[1.02]
+          transition-all duration-300
+          cursor-pointer
+          group
+          relative
+          overflow-hidden
+        ">
+          {/* Animated background effect */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <div className="relative z-10 flex flex-col items-center gap-3">
+            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Plus className="w-8 h-8 text-white" />
+            </div>
+            <span className="text-lg font-bold font-heading">Create New Classroom</span>
+            <span className="text-sm opacity-90">Start learning something new!</span>
+          </div>
+        </div>
       </DialogTrigger>
 
       <DialogContent
         className="
           sm:max-w-[500px] 
-          bg-black border border-[#252525] text-[#eeffab] 
-          shadow-[0_20px_50px_rgba(238,255,171,0.15)] 
-          rounded-2xl
+          bg-white border border-slate-200
+          text-slate-900
+          shadow-2xl
+          rounded-3xl
         "
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#eeffab]">
+          <DialogTitle className="text-2xl font-bold text-slate-900 font-heading">
             Create New Classroom
           </DialogTitle>
-          <DialogDescription className="text-[#eeffab] opacity-70">
+          <DialogDescription className="text-slate-600">
             Fill in the details below to initialize a new learning environment.
           </DialogDescription>
         </DialogHeader>
@@ -229,7 +300,7 @@ const CreateClassroomModal: React.FC = () => {
           <div className="grid gap-2">
             <Label
               htmlFor="name"
-              className="text-[#eeffab] flex items-center gap-2"
+              className="text-black flex items-center gap-2"
             >
               <BookOpen className={iconClasses} /> Name of Classroom
             </Label>
@@ -247,7 +318,7 @@ const CreateClassroomModal: React.FC = () => {
           <div className="grid gap-2">
             <Label
               htmlFor="subject"
-              className="text-[#eeffab] flex items-center gap-2"
+              className="text-black flex items-center gap-2"
             >
               <Layers className={iconClasses} /> Subject
             </Label>
@@ -261,9 +332,9 @@ const CreateClassroomModal: React.FC = () => {
             />
           </div>
 
-          {/* 3. Description */}
-          <div className="grid gap-2">
-            <Label htmlFor="description" className="text-[#eeffab]">
+          {/* 3. Description (Commented out as per API requirements) */}
+          {/* <div className="grid gap-2">
+            <Label htmlFor="description" className="text-black">
               Description
             </Label>
             <Textarea
@@ -275,7 +346,7 @@ const CreateClassroomModal: React.FC = () => {
               required
               className={inputClasses}
             />
-          </div>
+          </div> */}
 
           {/* 4. Cover Image (Drag & Drop) */}
           <DragDropFileInput
@@ -298,7 +369,7 @@ const CreateClassroomModal: React.FC = () => {
           <DialogFooter className="mt-4">
             <Button
               type="submit"
-              className="w-full bg-[#eeffab] hover:bg-[#eeffab] hover:opacity-90 text-black text-lg font-semibold h-12 transition-all duration-300"
+              className="w-full bg-gradient-primary hover:shadow-xl hover:scale-[1.02] text-white text-lg font-semibold font-heading h-12 rounded-xl transition-all duration-300"
             >
               Create Classroom
             </Button>

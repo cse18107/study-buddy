@@ -51,16 +51,19 @@
   --color-card: var(--card);
   
   /* Border Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
+  --radius-sm: 2px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
 }
 
 :root {
   /* ========== BORDER RADIUS ========== */
-  --radius: 14px; /* Base radius - playful and modern */
+  --radius: 5px; /* Base radius - reduced as requested */
+  
+  /* ========== BORDER WIDTH CONTROL ========== */
+  --border-width: 3px; /* Global border width control */
   
   /* ========== LIGHT THEME COLORS ========== */
   
@@ -548,6 +551,27 @@
               linear-gradient(135deg, rgb(139 92 246), rgb(14 165 233)) border-box;
 }
 
+/* ========== GLOBAL BORDER OVERRIDES ========== */
+/* Enforce 3px border where borders are used */
+.border, .border-2, .border-4 {
+  border-width: var(--border-width) !important;
+}
+
+.border-t, .border-t-2, .border-t-4 { border-top-width: var(--border-width) !important; }
+.border-r, .border-r-2, .border-r-4 { border-right-width: var(--border-width) !important; }
+.border-b, .border-b-2, .border-b-4 { border-bottom-width: var(--border-width) !important; }
+.border-l, .border-l-2, .border-l-4 { border-left-width: var(--border-width) !important; }
+
+.border-x, .border-x-2 { 
+  border-left-width: var(--border-width) !important;
+  border-right-width: var(--border-width) !important;
+}
+
+.border-y, .border-y-2 { 
+  border-top-width: var(--border-width) !important;
+  border-bottom-width: var(--border-width) !important;
+}
+
 /* ========== RESPONSIVE TYPOGRAPHY ========== */
 @media (max-width: 640px) {
   html {
@@ -559,4 +583,31 @@
   html {
     font-size: 16px;
   }
+}
+
+/* ========== CALENDAR HEATMAP CUSTOM STYLING ========== */
+.react-calendar-heatmap .color-practice-0 { fill: #f1f5f9; } /* Tailwind Slate 100 */
+.react-calendar-heatmap .color-practice-1 { fill: #dcfce7; } /* Tailwind Green 100 */
+.react-calendar-heatmap .color-practice-2 { fill: #86efac; } /* Tailwind Green 300 */
+.react-calendar-heatmap .color-practice-3 { fill: #22c55e; } /* Tailwind Green 500 */
+.react-calendar-heatmap .color-practice-4 { fill: #15803d; } /* Tailwind Green 700 */
+
+.react-calendar-heatmap .color-exam-0 { fill: #f1f5f9; }
+.react-calendar-heatmap .color-exam-1 { fill: #fae8ff; } /* Tailwind Purple 100 */
+.react-calendar-heatmap .color-exam-2 { fill: #f0abfc; } /* Tailwind Purple 300 */
+.react-calendar-heatmap .color-exam-3 { fill: #d946ef; } /* Tailwind Purple 500 */
+.react-calendar-heatmap .color-exam-4 { fill: #a21caf; } /* Tailwind Purple 700 */
+
+.react-calendar-heatmap rect {
+  rx: 2px; /* Slightly rounded heatmap cells */
+  transition: fill 0.2s ease;
+}
+
+.react-calendar-heatmap rect:hover {
+  filter: brightness(0.9);
+  cursor: pointer;
+}
+
+.heatmap-container svg {
+  @apply w-full h-auto;
 }
