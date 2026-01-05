@@ -6,78 +6,61 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 
-// Menu items with colors for learner-friendly design
 const items = [
   {
     title: "Learn",
     url: "?set=learn",
     icon: GraduationCap,
-    color: "text-purple-500",
-    hoverColor: "hover:text-purple-600",
-    bgColor: "hover:bg-purple-50",
-    description: "Study your materials"
+    color: "text-black",
+    bgColor: "bg-primary",
   },
   {
     title: "Chat",
     url: "?set=chat",
     icon: Bot,
-    color: "text-cyan-500",
-    hoverColor: "hover:text-cyan-600",
-    bgColor: "hover:bg-cyan-50",
-    description: "Ask AI for help"
+    color: "text-black",
+    bgColor: "bg-secondary",
   },
   {
     title: "Practice",
     url: "?set=practice",
     icon: BookOpenCheck,
-    color: "text-blue-500",
-    hoverColor: "hover:text-blue-600",
-    bgColor: "hover:bg-blue-50",
-    description: "Quiz yourself"
+    color: "text-black",
+    bgColor: "bg-accent",
   },
   {
     title: "Exam",
     url: "?set=exam",
     icon: Calendar,
-    color: "text-orange-500",
-    hoverColor: "hover:text-orange-600",
-    bgColor: "hover:bg-orange-50",
-    description: "Test your knowledge"
+    color: "text-black",
+    bgColor: "bg-info",
   },
   {
     title: "Progress",
     url: "?set=progress",
     icon: ChartNoAxesCombined,
-    color: "text-green-500",
-    hoverColor: "hover:text-green-600",
-    bgColor: "hover:bg-green-50",
-    description: "Track your success"
+    color: "text-black",
+    bgColor: "bg-green-400",
   },
   {
     title: "Documents",
     url: "?set=documents",
     icon: Newspaper,
-    color: "text-indigo-500",
-    hoverColor: "hover:text-indigo-600",
-    bgColor: "hover:bg-indigo-50",
-    description: "Access materials"
+    color: "text-black",
+    bgColor: "bg-blue-400",
   },
   {
     title: "Settings",
     url: "?set=settings",
     icon: Settings,
-    color: "text-slate-500",
-    hoverColor: "hover:text-slate-600",
-    bgColor: "hover:bg-slate-50",
-    description: "Customize experience"
+    color: "text-black",
+    bgColor: "bg-slate-300",
   },
 ];
 
@@ -87,23 +70,19 @@ export function AppSidebar() {
     const currentSet = searchParams?.get("set") || "learn";
   
   return (
-    <Sidebar className="bg-white border-r border-slate-200">
-      <SidebarContent className="bg-white">
+    <Sidebar className="bg-white border-r-8 border-black">
+      <SidebarContent className="bg-white p-4">
         <SidebarGroup>
-          <SidebarGroupLabel
-            onClick={() => router.push("/")}
-            className="cursor-pointer h-[100px] mb-4 hover:opacity-80 transition-opacity"
+          <div 
+            onClick={() => router.push("/dashboard")}
+            className="cursor-pointer mb-10 border-4 border-black p-4 bg-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
           >
-            <Image 
-              className="mx-auto" 
-              src="/Full_logo.png" 
-              alt="Study Buddy Logo" 
-              width={300} 
-              height={100} 
-            />
-          </SidebarGroupLabel>
+             <h2 className="text-3xl font-black text-black font-heading leading-none uppercase">
+                STUDY<br/>BUDDY
+             </h2>
+          </div>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-4">
               {items.map((item) => {
                 const isActive = currentSet === item.url.split('=')[1];
                 const Icon = item.icon;
@@ -114,29 +93,20 @@ export function AppSidebar() {
                       <div
                         onClick={() => router.push(item.url)}
                         className={`
-                          cursor-pointer flex items-center gap-3 px-4 py-3 rounded-xl
-                          transition-all duration-300 group
+                          cursor-pointer flex items-center gap-4 px-5 py-4 rounded-none
+                          border-4 border-black transition-all duration-100 uppercase font-black
                           ${isActive 
-                            ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/30' 
-                            : `${item.bgColor} text-slate-700`
+                            ? `${item.bgColor} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] translate-x-[-2px] translate-y-[-2px]` 
+                            : 'bg-white hover:bg-black hover:text-white'
                           }
                         `}
                       >
-                        <Icon className={`
-                          w-5 h-5 transition-all duration-300
-                          ${isActive 
-                            ? 'text-white scale-110' 
-                            : `${item.color} ${item.hoverColor} group-hover:scale-110`
-                          }
-                        `} />
-                        <span className={`
-                          font-medium transition-colors duration-300
-                          ${isActive ? 'text-white font-semibold' : 'text-slate-700'}
-                        `}>
+                        <Icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''}`} strokeWidth={3} />
+                        <span className="text-sm">
                           {item.title}
                         </span>
                         {isActive && (
-                          <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                          <div className="ml-auto w-3 h-3 bg-black border-2 border-white rounded-full"></div>
                         )}
                       </div>
                     </SidebarMenuButton>
@@ -146,6 +116,10 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <div className="mt-auto p-4 border-4 border-black bg-black text-white text-[10px] font-black uppercase text-center rotate-[2deg]">
+             VIBE CHECK: PASSED ✅
+        </div>
       </SidebarContent>
     </Sidebar>
   );

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Loader2, FileText, FolderOpen, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Loader2, FileText, FolderOpen, ChevronLeft, ChevronRight, Download, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Document, Page, pdfjs } from 'react-pdf';
 
-// Important: Configure the worker for react-pdf to render properly
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -29,12 +28,12 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({ pdfUrl, fileName, onClose }) =>
 
   if (!pdfUrl) {
     return (
-      <div className="flex items-center justify-center h-full bg-indigo-50 rounded-2xl border-2 border-dashed border-indigo-300">
-        <div className="text-center p-8">
-          <FolderOpen className="w-16 h-16 text-indigo-400 mx-auto mb-4" />
-          <p className="text-indigo-700 font-semibold text-lg">No document selected</p>
-          <p className="text-indigo-600 text-sm mt-2">
-            Upload or select a document to preview
+      <div className="flex items-center justify-center h-full bg-white border-8 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
+        <div className="text-center p-12 bg-primary border-4 border-black shadow-[8px_8px_0px_0px_black] rotate-[-2deg]">
+          <FolderOpen className="w-20 h-20 text-black mx-auto mb-6" strokeWidth={3} />
+          <p className="text-black font-black text-3xl uppercase leading-none">NO INTEL SELECTED</p>
+          <p className="text-black font-bold uppercase text-xs mt-4">
+             Upload a source document to initialize the link.
           </p>
         </div>
       </div>
@@ -42,86 +41,80 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({ pdfUrl, fileName, onClose }) =>
   }
 
   return (
-    <div className="flex flex-col h-[85vh] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    <div className="flex flex-col h-[85vh] bg-white border-8 border-black shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-4 text-white flex items-center justify-between z-10">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-white/20 rounded-lg">
-            <FileText className="w-5 h-5" />
+      <div className="bg-primary p-6 border-b-8 border-black text-black flex items-center justify-between z-10">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_black]">
+            <FileText className="w-8 h-8 text-black" strokeWidth={3} />
           </div>
           <div>
-            <h3 className="font-bold text-lg">{fileName}</h3>
-            <p className="text-xs opacity-80">
-              {numPages ? `Page ${pageNumber} of ${numPages}` : "Analyzing structure..."}
+            <h3 className="font-black text-2xl uppercase leading-none">{fileName}</h3>
+            <p className="text-[10px] font-black uppercase mt-2 bg-black text-white px-2 py-0.5 inline-block">
+              {numPages ? `SYNCED: ${pageNumber} / ${numPages}` : "DECRYPTING..."}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
+        <div className="flex gap-4">
+          <button
             onClick={() => window.open(pdfUrl, '_blank')}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border-0 rounded-xl px-4"
+            className="neo-button bg-white text-black text-sm h-12 flex items-center justify-center"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </Button>
+            <Download className="w-4 h-4 mr-2" strokeWidth={3} />
+            EXPORT
+          </button>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 bg-slate-100  p-4 md:p-8 overflow-auto flex justify-center custom-scrollbar">
-        <div className="relative">
+      <div className="flex-1 bg-black p-4 md:p-10 overflow-auto flex justify-center custom-scrollbar relative">
+          <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        <div className="relative border-8 border-white shadow-[12px_12px_0px_0px_rgba(255,255,255,0.2)]">
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={
-              <div className="flex flex-col items-center justify-center p-20">
-                <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
-                <p className="text-slate-600 font-bold">Rendering Document Elements...</p>
+              <div className="flex flex-col items-center justify-center p-20 bg-white border-4 border-black">
+                <Loader2 className="w-16 h-16 text-black animate-spin mb-4" strokeWidth={4} />
+                <p className="text-black font-black uppercase">INITIALIZING TEXT LAYERS...</p>
               </div>
             }
-            className="shadow-2xl rounded-lg overflow-hidden"
           >
             <Page 
               pageNumber={pageNumber} 
               renderAnnotationLayer={false}
               renderTextLayer={true}
-              scale={1.4}
+              scale={1.2}
               className="bg-white"
             />
           </Document>
         </div>
       </div>
 
-      {/* Premium Pagination Controls */}
+      {/* Pagination Controls */}
       {!isLoading && numPages && (
-        <div className="bg-white border-t border-slate-200 p-4 flex items-center justify-between px-8 z-10">
-          <Button
+        <div className="bg-white border-t-8 border-black p-6 flex items-center justify-between px-10 z-10">
+          <button
             onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
             disabled={pageNumber <= 1}
-            variant="ghost"
-            className="text-indigo-700 hover:bg-indigo-50 rounded-xl px-6 font-bold flex items-center gap-2"
+            className="neo-button bg-white text-black disabled:opacity-30 disabled:shadow-none"
           >
-            <ChevronLeft className="w-5 h-5" />
-            Previous
-          </Button>
+            <ChevronLeft className="w-6 h-6" strokeWidth={4} />
+            <span className="ml-2 uppercase text-xs">PREV</span>
+          </button>
 
-          <div className="flex items-center gap-2 px-6 py-2 bg-slate-50 rounded-2xl border border-slate-100">
-            <span className="text-sm font-bold text-slate-400">PAGE</span>
-            <span className="text-lg font-black text-indigo-600">{pageNumber}</span>
-            <span className="text-sm font-bold text-slate-300">/</span>
-            <span className="text-sm font-bold text-slate-500">{numPages}</span>
+          <div className="flex items-center gap-4 border-4 border-black px-6 py-2 bg-secondary text-white shadow-[4px_4px_0px_0px_black] font-black uppercase text-xl italic">
+            {pageNumber} / {numPages}
           </div>
 
-          <Button
+          <button
             onClick={() => setPageNumber((prev) => Math.min(prev + 1, numPages))}
             disabled={pageNumber >= numPages}
-            variant="ghost"
-            className="text-indigo-700 hover:bg-indigo-50 rounded-xl px-6 font-bold flex items-center gap-2"
+            className="neo-button bg-white text-black disabled:opacity-30 disabled:shadow-none"
           >
-            Next
-            <ChevronRight className="w-5 h-5" />
-          </Button>
+            <span className="mr-2 uppercase text-xs">NEXT</span>
+            <ChevronRight className="w-6 h-6" strokeWidth={4} />
+          </button>
         </div>
       )}
     </div>
@@ -130,32 +123,30 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({ pdfUrl, fileName, onClose }) =>
 
 const Documents = () => {
   const [selectedPdfUrl] = useState<string | null>(MOCK_PDF_URL);
-  const fileName = "Entity-Relationship (E-R) Model Fundamentals.pdf";
+  const fileName = "FUNDAMENTALS_ER_MODEL.PDF";
 
   return (
-    <div className="h-screen w-full bg-background overflow-hidden flex flex-col">
-      {/* Colorful Top Bar */}
-      <div className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-2"></div>
-      
+    <div className="h-screen w-full bg-[#FDFDFD] overflow-hidden flex flex-col p-8 md:p-12">
       {/* Header */}
-      <div className="p-8 bg-white border-b border-slate-200 shadow-sm relative z-20">
-        <div className="flex items-center justify-between">
+      <div className="border-8 border-black bg-white p-8 mb-10 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden rotate-[-0.5deg]">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-info border-l-8 border-b-8 border-black"></div>
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3 font-heading">
-              <FolderOpen className="w-8 h-8 text-indigo-500" />
-              Course Analytics & Study Vault
+            <h1 className="text-4xl md:text-7xl font-black text-black flex items-center gap-4 font-heading uppercase leading-none">
+              <FolderOpen className="w-12 h-12 text-black" strokeWidth={3} />
+              THE VAULT
             </h1>
-            <p className="text-slate-500 font-medium">Explore and interact with your academic resources</p>
+            <p className="text-black font-bold uppercase text-xs mt-2 border-l-4 border-secondary pl-3">Accessing high-value knowledge assets.</p>
           </div>
-          <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-2xl px-8 py-6 shadow-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98]">
-            <Download className="w-5 h-5 mr-3" />
-            Export Portfolio
-          </Button>
+          <button className="neo-button bg-primary text-black flex items-center gap-3 uppercase h-16">
+            <Download className="w-6 h-6" strokeWidth={3} />
+            EXPORT PORTFOLIO
+          </button>
         </div>
       </div>
 
       {/* Document Preview */}
-      <div className="flex-1 p-2 md:p-4 overflow-hidden bg-slate-50">
+      <div className="flex-1 overflow-hidden">
         <PDFPreview
           pdfUrl={selectedPdfUrl}
           fileName={fileName}

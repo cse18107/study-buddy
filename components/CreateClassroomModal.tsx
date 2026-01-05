@@ -1,9 +1,5 @@
-
-
-
 import React, {useState, useRef, useCallback} from "react";
 import {Upload, FileText, BookOpen, Layers, Plus, File, X} from "lucide-react";
-// Shadcn UI Imports (assuming they are correctly path-aliased)
 import {Button} from "@/components/ui/button";
 import {
   Dialog,
@@ -16,9 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-// import {Textarea} from "@/components/ui/textarea";
 
-// --- Type Definitions ---
 interface ClassroomFormData {
   name: string;
   subject: string;
@@ -35,7 +29,6 @@ interface DragDropFileInputProps {
   setFile: (file: File | null) => void;
 }
 
-// Custom Drag and Drop File Input Component
 const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
   label,
   icon,
@@ -81,27 +74,27 @@ const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
     e.stopPropagation();
     setFile(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // Reset file input
+      fileInputRef.current.value = ""; 
     }
   };
 
   return (
     <div className="grid gap-2">
-      {/* Label */}
-      <Label className="text-slate-700 font-medium flex items-center gap-2">
-        <div className="text-purple-500">{icon}</div>
+      <Label className="text-black font-black uppercase flex items-center gap-2 text-xs">
+        {icon}
         {label}
       </Label>
 
       <div
         className={`
-          relative w-full min-h-[100px] rounded-xl border-2 border-dashed p-4 cursor-pointer
-          transition-all duration-300
+          relative w-full min-h-[120px] rounded-none border-4 border-black p-4 cursor-pointer
+          transition-all duration-100
           ${
             isDragging
-              ? "border-purple-500 bg-purple-50 scale-105"
-              : "border-slate-300 hover:border-purple-400 hover:bg-purple-50/50 bg-white"
+              ? "bg-secondary scale-[1.02]"
+              : "bg-white hover:bg-primary/10"
           }
+           shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
         `}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -117,32 +110,24 @@ const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
         />
 
         {file ? (
-          // File Selected View
-          <div className="flex items-center justify-between text-slate-700 bg-slate-100 p-3 rounded-lg border border-slate-200">
+          <div className="flex items-center justify-between text-black bg-primary/20 p-3 border-2 border-black">
             <div className="flex items-center gap-3 truncate">
               <File className="w-5 h-5 flex-shrink-0" />
-              <span className="truncate">{file.name}</span>
+              <span className="truncate font-black text-xs uppercase">{file.name}</span>
             </div>
-            <Button
+            <button
               type="button"
               onClick={handleRemoveFile}
-              className="p-1 h-auto bg-transparent hover:bg-red-50 text-slate-500 hover:text-red-600 border-none rounded transition-colors"
+              className="p-1 bg-black text-white hover:bg-red-600 border-none transition-colors"
             >
               <X className="w-4 h-4" />
-            </Button>
+            </button>
           </div>
         ) : (
-          // Default Drag/Click Prompt
           <div className="flex flex-col items-center justify-center text-center h-full">
-            <Upload className="w-6 h-6 text-purple-500 mb-2" />
-            <p className="text-sm text-slate-700 font-medium">
-              Drag & drop file here, or{" "}
-              <span className="underline">click to select</span>
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              {accept.includes("image")
-                ? "Accepted: Images (.jpg, .png, .gif)"
-                : "Accepted: Documents (.pdf, .docx, etc.)"}
+            <Upload className="w-8 h-8 text-black mb-2" />
+            <p className="text-xs text-black font-black uppercase">
+              DROP IT HERE OR <span className="underline">CLICK</span>
             </p>
           </div>
         )}
@@ -150,8 +135,6 @@ const DragDropFileInput: React.FC<DragDropFileInputProps> = ({
     </div>
   );
 };
-
-// --- Main Modal Component ---
 
 const CreateClassroomModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -173,7 +156,6 @@ const CreateClassroomModal: React.FC = () => {
     }));
   };
 
-  // Handlers for updating file state using the custom input
   const setCoverImage = (file: File | null) => {
     setFormData((prev) => ({...prev, coverImage: file}));
   };
@@ -184,15 +166,10 @@ const CreateClassroomModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting New Classroom:", formData);
-
     const apiFormData = new FormData();
     apiFormData.append("classroomName", formData.name);
     apiFormData.append("subject", formData.subject);
     
-    // Note: description is currently not supported by the API
-    // apiFormData.append("description", formData.description);
-
     if (formData.document) {
       apiFormData.append("pdf_file", formData.document);
     }
@@ -220,13 +197,7 @@ const CreateClassroomModal: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log("API Response:", data);
-
-      alert(`Classroom "${formData.name}" successfully created!`);
       setIsOpen(false);
-      
-      // Reset form
       setFormData({
         name: "",
         subject: "",
@@ -237,76 +208,69 @@ const CreateClassroomModal: React.FC = () => {
 
     } catch (error) {
       console.error("Error creating classroom:", error);
-      alert("Failed to create classroom. Please try again.");
+      alert("Failed to create classroom.");
     }
   };
 
-  // --- Utility Class Definitions ---
   const inputClasses =
-    "bg-white border-2 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl transition-all";
-  const iconClasses = "w-4 h-4 text-purple-500";
+    "bg-white border-4 border-black text-black placeholder:text-black/30 focus:bg-primary/10 rounded-none h-14 font-black uppercase transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px]";
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {/* Trigger Button - Beautiful Gradient */}
         <div className="
-          bg-gradient-to-br from-purple-500 to-blue-500
-          h-[320px] sm:h-[380px]
-          hover:from-purple-600 hover:to-blue-600
-          text-white font-semibold 
-          flex flex-col items-center justify-center gap-4
-          rounded-2xl shadow-lg
-          hover:shadow-2xl hover:scale-[1.02]
-          transition-all duration-300
+          bg-secondary
+          h-[400px]
+          border-4 border-black
+          text-black 
+          flex flex-col items-center justify-center gap-6
+          rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
+          hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-4px] hover:translate-y-[-4px]
+          transition-all duration-100
           cursor-pointer
           group
           relative
           overflow-hidden
         ">
-          {/* Animated background effect */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          
-          <div className="relative z-10 flex flex-col items-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Plus className="w-8 h-8 text-white" />
+          <div className="relative z-10 flex flex-col items-center gap-4">
+            <div className="w-20 h-20 border-4 border-black bg-white flex items-center justify-center group-hover:rotate-12 transition-transform duration-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Plus className="w-10 h-10 text-black" strokeWidth={4} />
             </div>
-            <span className="text-lg font-bold font-heading">Create New Classroom</span>
-            <span className="text-sm opacity-90">Start learning something new!</span>
+            <div className="text-center">
+                <span className="text-3xl font-black font-heading uppercase block leading-none">NEW<br/>DECK</span>
+                <span className="text-[10px] font-black uppercase mt-2 bg-black text-white px-2 py-0.5 inline-block">Tap to drop</span>
+            </div>
           </div>
         </div>
       </DialogTrigger>
 
       <DialogContent
         className="
-          sm:max-w-[500px] 
-          bg-white border border-slate-200
-          text-slate-900
-          shadow-2xl
-          rounded-3xl
+          sm:max-w-[550px] 
+          bg-white border-8 border-black
+          text-black
+          shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]
+          rounded-none
+          p-8
         "
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-900 font-heading">
-            Create New Classroom
+          <DialogTitle className="text-4xl font-black text-black font-heading uppercase leading-none">
+            INITIALIZE DECK
           </DialogTitle>
-          <DialogDescription className="text-slate-600">
-            Fill in the details below to initialize a new learning environment.
+          <DialogDescription className="text-black font-bold uppercase text-xs mt-2 border-l-4 border-primary pl-3">
+             Configure your learning module. All systems operational.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          {/* 1. Name of Classroom */}
-          <div className="grid gap-2">
-            <Label
-              htmlFor="name"
-              className="text-black flex items-center gap-2"
-            >
-              <BookOpen className={iconClasses} /> Name of Classroom
+        <form onSubmit={handleSubmit} className="grid gap-8 py-6">
+          <div className="grid gap-3">
+            <Label htmlFor="name" className="text-black font-black uppercase text-xs flex items-center gap-2">
+              <BookOpen className="w-4 h-4" /> DECK NAME
             </Label>
             <Input
               id="name"
-              placeholder="e.g., Advanced Quantum Physics 101"
+              placeholder="E.G. QUANTUM VIBES 101"
               value={formData.name}
               onChange={handleChange}
               required
@@ -314,17 +278,13 @@ const CreateClassroomModal: React.FC = () => {
             />
           </div>
 
-          {/* 2. Subject */}
-          <div className="grid gap-2">
-            <Label
-              htmlFor="subject"
-              className="text-black flex items-center gap-2"
-            >
-              <Layers className={iconClasses} /> Subject
+          <div className="grid gap-3">
+            <Label htmlFor="subject" className="text-black font-black uppercase text-xs flex items-center gap-2">
+              <Layers className="w-4 h-4" /> SUBJECT TAG
             </Label>
             <Input
               id="subject"
-              placeholder="e.g., Science / Mathematics"
+              placeholder="E.G. BRAIN ROT / SCIENCE"
               value={formData.subject}
               onChange={handleChange}
               required
@@ -332,47 +292,29 @@ const CreateClassroomModal: React.FC = () => {
             />
           </div>
 
-          {/* 3. Description (Commented out as per API requirements) */}
-          {/* <div className="grid gap-2">
-            <Label htmlFor="description" className="text-black">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Provide a detailed overview of the classroom content and goals."
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              required
-              className={inputClasses}
-            />
-          </div> */}
-
-          {/* 4. Cover Image (Drag & Drop) */}
           <DragDropFileInput
-            label="Cover Image"
-            icon={<Upload className={iconClasses} />}
+            label="COVER ASSET"
+            icon={<Upload className="w-4 h-4" />}
             accept="image/*"
             file={formData.coverImage}
             setFile={setCoverImage}
           />
 
-          {/* 5. Document (Drag & Drop) */}
           <DragDropFileInput
-            label="Initial Document (Syllabus, etc.)"
-            icon={<FileText className={iconClasses} />}
-            accept=".pdf,.doc,.docx,.txt"
+            label="KNOWLEDGE SOURCE (PDF)"
+            icon={<FileText className="w-4 h-4" />}
+            accept=".pdf,.doc,.docx"
             file={formData.document}
             setFile={setDocument}
           />
 
-          <DialogFooter className="mt-4">
-            <Button
+          <DialogFooter className="mt-6">
+            <button
               type="submit"
-              className="w-full bg-gradient-primary hover:shadow-xl hover:scale-[1.02] text-white text-lg font-semibold font-heading h-12 rounded-xl transition-all duration-300"
+              className="w-full neo-button bg-primary hover:bg-orange-500 text-black h-16 uppercase"
             >
-              Create Classroom
-            </Button>
+              LAUNCH DECK 🚀
+            </button>
           </DialogFooter>
         </form>
       </DialogContent>

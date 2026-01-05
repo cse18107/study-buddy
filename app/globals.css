@@ -1,19 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Import Beautiful Fonts for Learners */
-/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Lexend:wght@400;500;600;700&display=swap'); */
+/* ============================================
+   STUDY BUDDY - NEOBRUTALIST THEME
+   Bold, Gritty, High-Contrast Design
+   ============================================ */
 
 @custom-variant dark (&:is(.dark *));
 
-/* ============================================
-   STUDY BUDDY - LIGHT THEME FOR LEARNERS
-   Modern, Playful, Energizing Design System
-   ============================================ */
-
 @theme inline {
   /* Font Families */
-  --font-heading: 'Poppins', 'Lexend', sans-serif;
+  --font-heading: 'Archivo Black', 'Inter Tight', 'Inter', sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
   
@@ -51,563 +48,163 @@
   --color-card: var(--card);
   
   /* Border Radius */
-  --radius-sm: 2px;
-  --radius-md: 5px;
+  --radius-sm: 0px;
+  --radius-md: 4px;
   --radius-lg: 8px;
-  --radius-xl: 10px;
-  --radius-2xl: 12px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
 }
 
 :root {
   /* ========== BORDER RADIUS ========== */
-  --radius: 5px; /* Base radius - reduced as requested */
+  --radius: 12px; 
   
   /* ========== BORDER WIDTH CONTROL ========== */
-  --border-width: 3px; /* Global border width control */
+  --border-width: 4px; 
   
-  /* ========== LIGHT THEME COLORS ========== */
+  /* ========== NEOBRUTALIST COLORS ========== */
   
   /* Background & Foreground */
-  --background: 248 250 252; /* Soft blue-gray #F8FAFC */
-  --foreground: 15 23 42; /* Slate 900 #0F172A */
+  --background: 255 255 255; /* Pure White */
+  --foreground: 0 0 0; /* Pure Black */
   
   /* Card */
-  --card: 255 255 255; /* Pure white #FFFFFF */
-  --card-foreground: 15 23 42; /* Slate 900 */
+  --card: 255 255 255; 
+  --card-foreground: 0 0 0;
   
   /* Popover */
-  --popover: 255 255 255; /* White */
-  --popover-foreground: 15 23 42; /* Slate 900 */
+  --popover: 255 255 255;
+  --popover-foreground: 0 0 0;
   
-  /* Primary - Vibrant Purple (Energizing & Educational) */
-  --primary: 139 92 246; /* Purple 500 #8B5CF6 */
-  --primary-foreground: 255 255 255; /* White */
+  /* Primary - Vibrant Orange (Ready to Flex) */
+  --primary: 255 159 0; /* #FF9F00 */
+  --primary-foreground: 0 0 0; 
   
-  /* Secondary - Warm Coral (Encouraging & Friendly) */
-  --secondary: 251 146 60; /* Orange 400 #FB923C */
-  --secondary-foreground: 255 255 255; /* White */
+  /* Secondary - Vibrant Green (Pepe Style) */
+  --secondary: 0 200 83; /* #00C853 */
+  --secondary-foreground: 255 255 255;
   
   /* Muted */
-  --muted: 241 245 249; /* Slate 100 #F1F5F9 */
-  --muted-foreground: 100 116 139; /* Slate 500 #64748B */
+  --muted: 240 240 240; 
+  --muted-foreground: 60 60 60;
   
-  /* Accent - Sky Blue (Interactive & Fresh) */
-  --accent: 14 165 233; /* Sky 500 #0EA5E9 */
-  --accent-foreground: 255 255 255; /* White */
+  /* Accent - Cyber Blue */
+  --accent: 0 160 255;
+  --accent-foreground: 0 0 0;
   
-  /* Destructive - Friendly Red */
-  --destructive: 239 68 68; /* Red 500 #EF4444 */
-  --destructive-foreground: 255 255 255; /* White */
+  /* Destructive */
+  --destructive: 255 60 60;
+  --destructive-foreground: 255 255 255;
   
-  /* Success - Cheerful Green */
-  --success: 34 197 94; /* Green 500 #22C55E */
-  --success-foreground: 255 255 255; /* White */
-  
-  /* Warning - Sunny Yellow */
-  --warning: 251 191 36; /* Amber 400 #FBBF24 */
-  --warning-foreground: 15 23 42; /* Dark text */
-  
-  /* Info - Cool Teal */
-  --info: 20 184 166; /* Teal 500 #14B8A6 */
-  --info-foreground: 255 255 255; /* White */
+  /* Info - Deep Yellow */
+  --info: 255 215 0;
+  --info-foreground: 0 0 0;
   
   /* Border & Input */
-  --border: 226 232 240; /* Slate 200 #E2E8F0 */
-  --input: 226 232 240; /* Slate 200 */
-  --ring: 139 92 246; /* Purple 500 */
+  --border: 0 0 0; /* Pure Black Border */
+  --input: 255 255 255;
+  --ring: 0 0 0;
   
-  /* Chart Colors - Vibrant & Harmonious Palette */
-  --chart-1: 139 92 246; /* Purple - Learning Progress */
-  --chart-2: 251 146 60; /* Orange - Engagement */
-  --chart-3: 14 165 233; /* Sky Blue - Performance */
-  --chart-4: 34 197 94; /* Green - Success Rate */
-  --chart-5: 236 72 153; /* Pink - Participation */
-  --chart-6: 251 191 36; /* Amber - Time Spent */
+  /* Chart Colors */
+  --chart-1: 255 159 0;
+  --chart-2: 0 200 83;
+  --chart-3: 0 160 255;
+  --chart-4: 255 60 60;
+  --chart-5: 255 215 0;
   
   /* Sidebar */
-  --sidebar: 255 255 255; /* White */
-  --sidebar-foreground: 15 23 42; /* Slate 900 */
-  --sidebar-primary: 139 92 246; /* Purple 500 */
-  --sidebar-primary-foreground: 255 255 255; /* White */
-  --sidebar-accent: 241 245 249; /* Slate 100 */
-  --sidebar-accent-foreground: 15 23 42; /* Slate 900 */
-  --sidebar-border: 226 232 240; /* Slate 200 */
-  --sidebar-ring: 139 92 246; /* Purple 500 */
+  --sidebar: 255 255 255;
+  --sidebar-foreground: 0 0 0;
+  --sidebar-primary: 255 159 0;
+  --sidebar-primary-foreground: 0 0 0;
+  --sidebar-accent: 0 200 83;
+  --sidebar-accent-foreground: 0 0 0;
+  --sidebar-border: 0 0 0;
+  --sidebar-ring: 0 0 0;
   
-  /* Custom Shadows with Color (Playful & Soft) */
-  --shadow-sm: 0 1px 2px 0 rgb(139 92 246 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(139 92 246 / 0.1), 0 2px 4px -2px rgb(139 92 246 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(139 92 246 / 0.15), 0 4px 6px -4px rgb(139 92 246 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(139 92 246 / 0.2), 0 8px 10px -6px rgb(139 92 246 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(139 92 246 / 0.25);
+  /* Custom Shadows (Hard Shadow) */
+  --shadow-sm: 2px 2px 0px 0px rgb(0 0 0);
+  --shadow-md: 4px 4px 0px 0px rgb(0 0 0);
+  --shadow-lg: 8px 8px 0px 0px rgb(0 0 0);
+  --shadow-xl: 12px 12px 0px 0px rgb(0 0 0);
   
-  /* Gradient Colors for Interactive Elements */
-  --gradient-primary: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(109 40 217) 100%);
-  --gradient-secondary: linear-gradient(135deg, rgb(251 146 60) 0%, rgb(249 115 22) 100%);
-  --gradient-success: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%);
-  --gradient-accent: linear-gradient(135deg, rgb(14 165 233) 0%, rgb(6 182 212) 100%);
-  --gradient-warm: linear-gradient(135deg, rgb(251 146 60) 0%, rgb(251 191 36) 50%, rgb(252 211 77) 100%);
-  --gradient-cool: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(14 165 233) 50%, rgb(34 197 94) 100%);
+  --shadow-primary: 4px 4px 0px 0px rgb(255 159 0);
+  --shadow-secondary: 4px 4px 0px 0px rgb(0 200 83);
 }
 
 /* ========== BASE STYLES ========== */
 @layer base {
   * {
-    @apply border-border;
+    @apply border-black;
   }
   
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground uppercase; /* Neobrutalist often uses uppercase for bold effect */
     font-family: var(--font-body);
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
   
-  /* Heading Styles with Playful Font */
   h1, h2, h3, h4, h5, h6 {
+    @apply font-black tracking-tight uppercase leading-none;
     font-family: var(--font-heading);
-    font-weight: 700;
-    letter-spacing: -0.02em;
   }
   
-  h1 {
-    @apply text-4xl md:text-5xl lg:text-6xl;
-    font-weight: 800;
+  h1 { @apply text-6xl md:text-8xl; }
+  h2 { @apply text-4xl md:text-6xl; }
+  h3 { @apply text-3xl md:text-5xl; }
+  
+  /* Button Reset */
+  button {
+    @apply transition-all duration-100;
+  }
+}
+
+/* ========== NEOBRUTALIST UTILITIES ========== */
+@layer utilities {
+  .neo-border {
+    border: var(--border-width) solid black;
   }
   
-  h2 {
-    @apply text-3xl md:text-4xl;
-    font-weight: 700;
+  .neo-shadow {
+    box-shadow: var(--shadow-md);
   }
   
-  h3 {
-    @apply text-2xl md:text-3xl;
-    font-weight: 600;
+  .neo-shadow-lg {
+    box-shadow: var(--shadow-lg);
   }
   
-  h4 {
-    @apply text-xl md:text-2xl;
-    font-weight: 600;
+  .neo-shadow-xl {
+    box-shadow: var(--shadow-xl);
   }
   
-  /* Smooth Scrolling */
-  html {
-    scroll-behavior: smooth;
+  .neo-button {
+    @apply neo-border neo-shadow px-6 py-3 font-black text-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-none;
   }
   
-  /* Selection Color */
-  ::selection {
-    background-color: rgb(139 92 246 / 0.2);
-    color: rgb(15 23 42);
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3Entries%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.05;
   }
 }
 
-/* ========== CUSTOM ANIMATIONS ========== */
-@keyframes bounce-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.9) translateY(10px);
-  }
-  50% {
-    transform: scale(1.02) translateY(-2px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+/* ========== ANIMATIONS ========== */
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(2px, -2px) rotate(1deg); }
+  50% { transform: translate(-2px, 2px) rotate(-1deg); }
+  75% { transform: translate(2px, 2px) rotate(1deg); }
 }
 
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgb(139 92 246 / 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgb(139 92 246 / 0.5);
-  }
+.animate-shake {
+  animation: shake 0.2s infinite;
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes wiggle {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-3deg);
-  }
-  75% {
-    transform: rotate(3deg);
-  }
-}
-
-@keyframes success-pop {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes rainbow-shift {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
-}
-
-/* ========== ANIMATION UTILITY CLASSES ========== */
-.animate-bounce-in {
-  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-.animate-shimmer {
-  animation: shimmer 2s linear infinite;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(139 92 246 / 0.1) 50%,
-    transparent 100%
-  );
-  background-size: 1000px 100%;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-wiggle {
-  animation: wiggle 0.5s ease-in-out;
-}
-
-.animate-success-pop {
-  animation: success-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.animate-rainbow {
-  animation: rainbow-shift 3s linear infinite;
-}
-
-/* ========== INTERACTIVE UTILITIES ========== */
-.interactive-lift {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.interactive-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
-}
-
-.interactive-glow {
-  transition: all 0.3s ease;
-}
-
-.interactive-glow:hover {
-  box-shadow: 0 0 20px rgb(139 92 246 / 0.4);
-}
-
-.interactive-scale {
-  transition: transform 0.2s ease;
-}
-
-.interactive-scale:hover {
-  transform: scale(1.05);
-}
-
-.interactive-scale:active {
-  transform: scale(0.98);
-}
-
-/* ========== GRADIENT BACKGROUNDS ========== */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(109 40 217) 100%);
-}
-
-.bg-gradient-secondary {
-  background: linear-gradient(135deg, rgb(251 146 60) 0%, rgb(249 115 22) 100%);
-}
-
-.bg-gradient-success {
-  background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%);
-}
-
-.bg-gradient-accent {
-  background: linear-gradient(135deg, rgb(14 165 233) 0%, rgb(6 182 212) 100%);
-}
-
-.bg-gradient-warm {
-  background: linear-gradient(135deg, rgb(251 146 60) 0%, rgb(251 191 36) 50%, rgb(252 211 77) 100%);
-}
-
-.bg-gradient-cool {
-  background: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(14 165 233) 50%, rgb(34 197 94) 100%);
-}
-
-.bg-gradient-rainbow {
-  background: linear-gradient(135deg, 
-    rgb(139 92 246) 0%,
-    rgb(14 165 233) 20%,
-    rgb(34 197 94) 40%,
-    rgb(251 191 36) 60%,
-    rgb(251 146 60) 80%,
-    rgb(236 72 153) 100%
-  );
-}
-
-/* ========== ICON STYLING ========== */
-.icon-primary {
-  color: rgb(139 92 246);
-}
-
-.icon-secondary {
-  color: rgb(251 146 60);
-}
-
-.icon-success {
-  color: rgb(34 197 94);
-}
-
-.icon-accent {
-  color: rgb(14 165 233);
-}
-
-.icon-warning {
-  color: rgb(251 191 36);
-}
-
-.icon-interactive {
-  transition: all 0.3s ease;
-}
-
-.icon-interactive:hover {
-  transform: scale(1.15) rotate(5deg);
-  filter: brightness(1.2);
-}
-
-/* ========== CARD ENHANCEMENTS ========== */
-.card-playful {
-  border-radius: var(--radius-lg);
-  background: white;
-  border: 2px solid transparent;
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
-}
-
-.card-playful:hover {
-  border-color: rgb(139 92 246 / 0.3);
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-2px);
-}
-
-/* ========== BUTTON ENHANCEMENTS ========== */
-.btn-primary-playful {
-  background: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(109 40 217) 100%);
-  color: white;
-  border-radius: var(--radius-md);
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-family: var(--font-heading);
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
-}
-
-.btn-primary-playful:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.btn-primary-playful:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-sm);
-}
-
-/* ========== FOCUS STATES ========== */
-*:focus-visible {
-  outline: 2px solid rgb(139 92 246);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* ========== SCROLLBAR STYLING ========== */
+/* Overriding Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 12px;
 }
-
 ::-webkit-scrollbar-track {
-  background: rgb(241 245 249);
-  border-radius: 5px;
+  @apply bg-white border-l-4 border-black;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgb(139 92 246) 0%, rgb(109 40 217) 100%);
-  border-radius: 5px;
-  border: 2px solid rgb(241 245 249);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgb(109 40 217) 0%, rgb(91 33 182) 100%);
-}
-
-/* ========== LOADING STATES ========== */
-.skeleton-loader {
-  background: linear-gradient(
-    90deg,
-    rgb(241 245 249) 0%,
-    rgb(226 232 240) 50%,
-    rgb(241 245 249) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: var(--radius-md);
-}
-
-/* ========== BADGE STYLES ========== */
-.badge-primary {
-  background: rgb(139 92 246 / 0.1);
-  color: rgb(109 40 217);
-  border: 1px solid rgb(139 92 246 / 0.3);
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.badge-success {
-  background: rgb(34 197 94 / 0.1);
-  color: rgb(22 163 74);
-  border: 1px solid rgb(34 197 94 / 0.3);
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.badge-warning {
-  background: rgb(251 191 36 / 0.1);
-  color: rgb(217 119 6);
-  border: 1px solid rgb(251 191 36 / 0.3);
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-/* ========== UTILITY CLASSES ========== */
-.text-gradient-primary {
-  background: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(109 40 217) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-warm {
-  background: linear-gradient(135deg, rgb(251 146 60) 0%, rgb(251 191 36) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.border-gradient {
-  border: 2px solid transparent;
-  background: linear-gradient(white, white) padding-box,
-              linear-gradient(135deg, rgb(139 92 246), rgb(14 165 233)) border-box;
-}
-
-/* ========== GLOBAL BORDER OVERRIDES ========== */
-/* Enforce 3px border where borders are used */
-.border, .border-2, .border-4 {
-  border-width: var(--border-width) !important;
-}
-
-.border-t, .border-t-2, .border-t-4 { border-top-width: var(--border-width) !important; }
-.border-r, .border-r-2, .border-r-4 { border-right-width: var(--border-width) !important; }
-.border-b, .border-b-2, .border-b-4 { border-bottom-width: var(--border-width) !important; }
-.border-l, .border-l-2, .border-l-4 { border-left-width: var(--border-width) !important; }
-
-.border-x, .border-x-2 { 
-  border-left-width: var(--border-width) !important;
-  border-right-width: var(--border-width) !important;
-}
-
-.border-y, .border-y-2 { 
-  border-top-width: var(--border-width) !important;
-  border-bottom-width: var(--border-width) !important;
-}
-
-/* ========== RESPONSIVE TYPOGRAPHY ========== */
-@media (max-width: 640px) {
-  html {
-    font-size: 14px;
-  }
-}
-
-@media (min-width: 1024px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-/* ========== CALENDAR HEATMAP CUSTOM STYLING ========== */
-.react-calendar-heatmap .color-practice-0 { fill: #f1f5f9; } /* Tailwind Slate 100 */
-.react-calendar-heatmap .color-practice-1 { fill: #dcfce7; } /* Tailwind Green 100 */
-.react-calendar-heatmap .color-practice-2 { fill: #86efac; } /* Tailwind Green 300 */
-.react-calendar-heatmap .color-practice-3 { fill: #22c55e; } /* Tailwind Green 500 */
-.react-calendar-heatmap .color-practice-4 { fill: #15803d; } /* Tailwind Green 700 */
-
-.react-calendar-heatmap .color-exam-0 { fill: #f1f5f9; }
-.react-calendar-heatmap .color-exam-1 { fill: #fae8ff; } /* Tailwind Purple 100 */
-.react-calendar-heatmap .color-exam-2 { fill: #f0abfc; } /* Tailwind Purple 300 */
-.react-calendar-heatmap .color-exam-3 { fill: #d946ef; } /* Tailwind Purple 500 */
-.react-calendar-heatmap .color-exam-4 { fill: #a21caf; } /* Tailwind Purple 700 */
-
-.react-calendar-heatmap rect {
-  rx: 2px; /* Slightly rounded heatmap cells */
-  transition: fill 0.2s ease;
-}
-
-.react-calendar-heatmap rect:hover {
-  filter: brightness(0.9);
-  cursor: pointer;
-}
-
-.heatmap-container svg {
-  @apply w-full h-auto;
+  @apply bg-primary border-4 border-black neo-shadow;
 }

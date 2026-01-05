@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from "react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {Bot, Send, Sparkles} from "lucide-react";
+import {Bot, Send, Sparkles, User} from "lucide-react";
 
 interface Message {
   id: string;
@@ -16,11 +16,10 @@ interface ChatProps {
 
 const Chat: React.FC<ChatProps> = ({ classroomDetails }) => {
   const [messages, setMessages] = useState<Message[]>([
-    {id: "1", text: "Hello! I'm your AI study buddy. How can I help you learn today? 📚", sender: "bot"},
+    {id: "1", text: "Yo! I'm your AI Brain Booster. What's the mission today? 🚀", sender: "bot"},
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,24 +38,13 @@ const Chat: React.FC<ChatProps> = ({ classroomDetails }) => {
     setInput("");
     setIsTyping(true);
 
-    const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY1NjMzODU3fQ.KLK4GyPoU-7aw2bMmvIeP-pToo6ga3OzN8qbMEgLDzI";
-    
-    // Determine IDs from props or fallbacks
-    // Use the first source's ID if available
     const namespace = classroomDetails?.namespace || classroomDetails?.id || "a0281da8ad4f438793642d5924859a6d";
     const sourceId = classroomDetails?.sources?.[0]?.source_id || classroomDetails?.sources?.[0]?.id || "17e3a65c-87e0-4cdc-aafa-3edc11c77266";
 
     try {
       const response = await fetch('http://127.0.0.1:8000/api/generate-content', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${token}` // Endpoint might not need auth in the example, but good to have if needed. 
-          // User curl didn't show Auth header, but standard practice usually needs it. 
-          // I will replicate the user's cURL exactly first, but maybe keep Auth if it was used elsewhere?
-          // User cURL: "curl --location ... --header 'Content-Type: application/json' ..."
-          // No Authorization header in the user's snippet. Use cautiously.
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: userMessage.text,
           namespace: namespace,
@@ -68,126 +56,106 @@ const Chat: React.FC<ChatProps> = ({ classroomDetails }) => {
         const data = await response.json();
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: data.answer || "I couldn't generate an answer. Please try again.",
+          text: data.answer || "I couldn't generate an answer. Error code: VIBE_FAIL.",
           sender: "bot",
         };
         setMessages((prev) => [...prev, botMessage]);
       } else {
-        console.error("Failed to get response");
-        const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: "Sorry, I encountered an error getting the answer.",
-          sender: "bot",
-        };
-        setMessages((prev) => [...prev, errorMessage]);
+        setMessages((prev) => [...prev, { id: Date.now().toString(), text: "System overload. Try again.", sender: "bot" }]);
       }
     } catch (error) {
-      console.error("Error sending message:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Sorry, something went wrong. Please check your connection.",
-        sender: "bot",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, { id: Date.now().toString(), text: "Offline. Sync failed.", sender: "bot" }]);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") sendMessage();
-  };
-
   return (
-    <div className="flex flex-col h-screen w-full bg-background overflow-hidden">
-      {/* Header with Gradient */}
-      <div className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 p-6 text-white shadow-lg">
-        <div className="flex items-center gap-3 justify-center">
-          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center animate-pulse">
-            <Bot className="w-6 h-6" />
+    <div className="flex flex-col h-screen w-full bg-white overflow-hidden p-6 md:p-10">
+      {/* Header Section */}
+      <div className="border-8 border-black bg-primary p-6 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between mb-8 rotate-[-0.5deg]">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 border-4 border-black bg-white flex items-center justify-center animate-shake shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Bot className="w-10 h-10 text-black" strokeWidth={3} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold font-heading">AI Study Assistant</h2>
-            <p className="text-sm opacity-90">Ask me anything about your studies!</p>
+            <h2 className="text-3xl md:text-5xl font-black font-heading uppercase leading-none">AI TUTOR</h2>
+            <div className="bg-black text-white px-2 py-0.5 text-[10px] font-black uppercase inline-block mt-2">Status: Hyperactive</div>
           </div>
-          <Sparkles className="w-6 h-6 animate-pulse" />
         </div>
+        <Sparkles className="w-12 h-12 text-black hidden md:block" />
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-hidden relative">
-        <ScrollArea className="h-full px-6 py-6" ref={scrollRef}>
-          <div className="space-y-6 max-w-4xl mx-auto pb-4">
+      <div className="flex-1 overflow-hidden relative border-8 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] bg-[#F8F8F8] mb-8">
+        <ScrollArea className="h-full px-8 py-10">
+          <div className="space-y-10 max-w-5xl mx-auto pb-10">
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex ${
-                  msg.sender === "user" ? "justify-end" : "justify-start"
-                } animate-slide-up`}
+                className={`flex gap-4 ${
+                  msg.sender === "user" ? "flex-row-reverse text-right" : "flex-row"
+                }`}
               >
-                {msg.sender === "bot" && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mr-3 shadow-lg flex-shrink-0 mt-1">
-                    <Bot className="w-5 h-5 text-white" />
-                  </div>
-                )}
+                <div className={`w-12 h-12 flex-shrink-0 border-4 border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
+                    msg.sender === "user" ? "bg-secondary" : "bg-primary"
+                }`}>
+                    {msg.sender === "user" ? <User strokeWidth={3}/> : <Bot strokeWidth={3}/>}
+                </div>
                 <div
-                  className={`max-w-[85%] px-6 py-4 rounded-2xl text-sm shadow-md ${
+                  className={`max-w-[80%] px-6 py-4 border-4 border-black font-bold text-sm uppercase leading-tight shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${
                     msg.sender === "user"
-                      ? "bg-gradient-to-br from-purple-500 to-blue-500 text-white rounded-tr-none"
-                      : "bg-white text-slate-800 border border-slate-200 rounded-tl-none prose prose-slate max-w-none"
+                      ? "bg-white text-black"
+                      : "bg-[#000] text-white"
                   }`}
                 >
                   {msg.sender === "bot" ? (
-                     <div dangerouslySetInnerHTML={{ __html: msg.text }} />
+                      <div className="prose prose-invert max-w-none text-white text-sm" dangerouslySetInnerHTML={{ __html: msg.text }} />
                   ) : (
-                    <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                    <p>{msg.text}</p>
                   )}
                 </div>
               </div>
             ))}
             
             {isTyping && (
-              <div className="flex justify-start animate-bounce-in">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mr-3 shadow-lg mt-1">
-                  <Bot className="w-5 h-5 text-white" />
+              <div className="flex gap-4">
+                <div className="w-12 h-12 flex-shrink-0 border-4 border-black bg-primary flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                    <Bot strokeWidth={3}/>
                 </div>
-                <div className="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-md rounded-tl-none">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
+                <div className="bg-black text-white px-6 py-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-black uppercase italic">
+                   Thinking...
                 </div>
               </div>
             )}
-            {/* Invisible div to scroll to */}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </div>
 
       {/* Input Area */}
-      <div className="flex gap-3 p-6 bg-white border-t border-slate-200 shadow-lg">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            // Use onKeyDown for better Enter handling (e.g. avoid double submit if IME)
-            if (e.key === "Enter" && !e.shiftKey) { 
-              e.preventDefault(); 
-              sendMessage(); 
-            }
-          }}
-          placeholder="Ask me anything... 💬"
-          className="flex-1 bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl h-12 px-4"
-        />
-        <Button
+      <div className="flex gap-6 items-end">
+        <div className="flex-1 relative">
+            <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) { 
+                e.preventDefault(); 
+                sendMessage(); 
+                }
+            }}
+            placeholder="TYPE YOUR QUESTION HERE... 💬"
+            className="w-full bg-white border-8 border-black h-20 px-8 text-xl font-black uppercase placeholder:text-black/30 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] focus:shadow-none focus:translate-x-[4px] focus:translate-y-[4px] transition-all"
+            />
+        </div>
+        <button
           onClick={sendMessage}
           disabled={isTyping || !input.trim()}
-          className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 rounded-xl h-12 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="neo-button bg-secondary text-black h-20 w-32 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group"
         >
-          <Send className="w-5 h-5" />
-        </Button>
+          <Send className="w-10 h-10 group-hover:scale-125 transition-transform" strokeWidth={4} />
+        </button>
       </div>
     </div>
   );

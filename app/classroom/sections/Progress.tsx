@@ -13,14 +13,11 @@ import 'react-calendar-heatmap/dist/styles.css';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Activity, Zap, Trophy, Award, Loader2, Calendar } from "lucide-react";
 
-// Our beautiful chart color palette
 const CHART_COLORS = {
-  purple: "#8B5CF6",   // Learning Progress
-  orange: "#FB923C",   // Engagement
-  blue: "#0EA5E9",     // Performance
-  green: "#22C55E",    // Success Rate
-  pink: "#EC4899",     // Participation
-  amber: "#FBBF24",    // Time Spent
+  orange: "#FF9F00",
+  green: "#00C853", 
+  blue: "#00A0FF",
+  black: "#000000",
 };
 
 interface HeatmapValue {
@@ -33,11 +30,10 @@ interface PerformanceEntry {
   score: number;
 }
 
-
 const Progress = () => {
-  const [practiceYear, setPracticeYear] = useState(new Date().getFullYear().toString());
-  const [examYear, setExamYear] = useState(new Date().getFullYear().toString());
-  const [curveYear, setCurveYear] = useState(new Date().getFullYear().toString());
+  const [practiceYear, setPracticeYear] = useState("2025");
+  const [examYear, setExamYear] = useState("2025");
+  const [curveYear, setCurveYear] = useState("2025");
   
   const [practiceData, setPracticeData] = useState<HeatmapValue[]>([]);
   const [examData, setExamData] = useState<HeatmapValue[]>([]);
@@ -71,11 +67,9 @@ const Progress = () => {
       if (response.ok) {
         const data = await response.json();
         setData(data);
-      } else {
-        console.error(`Failed to fetch ${type} stats`);
       }
     } catch (error) {
-      console.error(`Error fetching ${type} stats:`, error);
+      console.error(`Error fetching stats:`, error);
     } finally {
       setLoader(false);
     }
@@ -98,8 +92,6 @@ const Progress = () => {
       if (response.ok) {
         const data = await response.json();
         setPerformanceScoreData(data);
-      } else {
-        console.error(`Failed to fetch performance stats`);
       }
     } catch (error) {
       console.error(`Error fetching performance stats:`, error);
@@ -122,15 +114,14 @@ const Progress = () => {
 
   const yearOptions = ["2023", "2024", "2025", "2026"];
 
-  // Custom Tooltip Component
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-4 rounded-xl shadow-xl border border-slate-200">
-          <p className="font-semibold text-slate-900 mb-2">{label}</p>
+        <div className="bg-white p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-xs">
+          <p className="mb-2 bg-black text-white px-2 py-0.5 inline-block">{label}</p>
           {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm text-slate-700">
-              <span className="font-medium">{entry.name}:</span> {entry.value}
+            <p key={index} className="text-black">
+              {entry.name}: {entry.value}
             </p>
           ))}
         </div>
@@ -139,267 +130,168 @@ const Progress = () => {
     return null;
   };
 
-  // Stat Card Component
-  const StatCard = ({
-    icon: Icon,
-    title,
-    value,
-    color,
-    children,
-    extraHeader,
-  }: {
-    icon: any;
-    title: string;
-    value?: string;
-    color: string;
-    children?: React.ReactNode;
-    extraHeader?: React.ReactNode;
-  }) => (
-    <Card className="bg-white border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300">
-      <CardHeader className="pb-3 px-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-3 text-slate-900">
-            <div className={`p-2 rounded-lg bg-${color}-100`}>
-              <Icon className={`w-5 h-5 text-${color}-600`} />
-            </div>
-            <div>
-              <div className="text-sm font-medium text-slate-600">{title}</div>
-              {value && <div className="text-2xl font-bold text-slate-900">{value}</div>}
-            </div>
-          </CardTitle>
-          {extraHeader}
-        </div>
-      </CardHeader>
-      <CardContent className="p-4">{children}</CardContent>
-    </Card>
-  );
-
   return (
-    <div className="p-8 bg-background min-h-screen">
-      {/* Colorful Top Bar */}
-      <div className="w-full bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 h-2 rounded-full mb-8"></div>
-
+    <div className="p-8 md:p-12 bg-[#FDFDFD] min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
-        <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 flex items-center gap-3 font-heading">
-            <Trophy className="w-10 h-10 text-green-500" />
-            Performance Analytics
-          </h1>
-          <p className="text-slate-600 mt-2">Track your learning progress and achievements</p>
+      <div className="border-8 border-black bg-white p-10 mb-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden rotate-[-0.5deg]">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary border-l-8 border-b-8 border-black"></div>
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8">
+            <div>
+                <span className="text-secondary font-black uppercase text-2xl tracking-widest">Analytics Core</span>
+                <h1 className="text-5xl md:text-8xl font-black text-black font-heading uppercase leading-none mt-2">
+                    PROGRESS
+                </h1>
+            </div>
+            <div className="bg-black text-white px-6 py-3 border-4 border-black shadow-[4px_4px_0px_0px_white] flex items-center gap-4">
+                <Trophy className="w-10 h-10" strokeWidth={3} />
+                <span className="text-3xl font-black uppercase">ALPHA STATUS</span>
+            </div>
         </div>
       </div>
 
-      {/* Practice Heatmap */}
-      <Card className="bg-white border-slate-200 shadow-lg mb-8 bg-gradient-to-br from-green-50/30 to-emerald-50/30">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-emerald-900">
-              <div className="p-2 rounded-lg bg-emerald-100">
-                <Activity className="w-5 h-5 text-emerald-600" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+          {/* Practice Heatmap */}
+          <div className="border-8 border-black bg-white p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center justify-between mb-8 border-b-4 border-black pb-4">
+                <div className="flex items-center gap-4 text-black">
+                  <div className="p-3 bg-secondary border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Activity className="w-8 h-8 text-black" strokeWidth={3} />
+                  </div>
+                  <h2 className="text-xl md:text-2xl font-black uppercase leading-none">PRACTICE HUB</h2>
+                </div>
+                <div className="flex items-center gap-2 border-4 border-black p-2 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <select
+                    value={practiceYear}
+                    onChange={(e) => setPracticeYear(e.target.value)}
+                    className="bg-transparent border-none focus:ring-0 text-xs font-black uppercase cursor-pointer outline-none"
+                  >
+                    {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
               </div>
-              <div>
-                <span className="text-lg font-bold">Practice Activity Hub</span>
-                <p className="text-sm font-medium text-emerald-600 opacity-75 italic">Frequency of practice sessions</p>
+              
+              <div className="heatmap-container practice-heatmap w-full bg-[#f8f8f8] p-4 border-4 border-black">
+                  <CalendarHeatmap
+                    startDate={new Date(`${practiceYear}-01-01`)}
+                    endDate={new Date(`${practiceYear}-12-31`)}
+                    values={practiceData}
+                    classForValue={(value: HeatmapValue) => {
+                      if (!value || value.count === 0) return 'color-practice-0';
+                      return `color-practice-${Math.min(value.count, 4)}`;
+                    }}
+                  />
               </div>
-            </div>
-            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border-2 border-emerald-100">
-              <Calendar className="w-4 h-4 text-emerald-500" />
-              <select
-                value={practiceYear}
-                onChange={(e) => setPracticeYear(e.target.value)}
-                className="bg-transparent border-none focus:ring-0 text-sm font-black text-emerald-900 cursor-pointer"
-              >
-                {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {loadingPractice ? (
-            <div className="h-32 flex flex-col items-center justify-center">
-              <Loader2 className="w-10 h-10 text-emerald-500 animate-spin mb-2" />
-              <p className="text-emerald-700 font-bold animate-pulse">Syncing practice data...</p>
-            </div>
-          ) : (
-            <div className="heatmap-container practice-heatmap w-full mx-auto">
-              <CalendarHeatmap
-                startDate={new Date(`${practiceYear}-01-01`)}
-                endDate={new Date(`${practiceYear}-12-31`)}
-                values={practiceData}
-                classForValue={(value: HeatmapValue) => {
-                  if (!value || value.count === 0) return 'color-practice-0';
-                  return `color-practice-${Math.min(value.count, 4)}`;
-                }}
-                tooltipDataAttrs={(value: HeatmapValue) => {
-                  return {
-                    'data-tip': value && value.date ? `${value.date}: ${value.count} sessions` : 'No sessions',
-                  };
-                }}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Exam Heatmap */}
-      <Card className="bg-white border-slate-200 mb-8 shadow-lg bg-gradient-to-br from-purple-50/30 to-pink-50/30">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-purple-900">
-              <div className="p-2 rounded-lg bg-purple-100">
-                <Trophy className="w-5 h-5 text-purple-600" />
+          {/* Exam Heatmap */}
+          <div className="border-8 border-black bg-white p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center justify-between mb-8 border-b-4 border-black pb-4">
+                <div className="flex items-center gap-4 text-black">
+                  <div className="p-3 bg-info border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Trophy className="w-8 h-8 text-black" strokeWidth={3} />
+                  </div>
+                  <h2 className="text-xl md:text-2xl font-black uppercase leading-none">EXAM COMMITMENT</h2>
+                </div>
+                <div className="flex items-center gap-2 border-4 border-black p-2 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <select
+                    value={examYear}
+                    onChange={(e) => setExamYear(e.target.value)}
+                    className="bg-transparent border-none focus:ring-0 text-xs font-black uppercase cursor-pointer outline-none"
+                  >
+                    {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
               </div>
-              <div>
-                <span className="text-lg font-bold">Exam Commitment Tracker</span>
-                <p className="text-sm font-medium text-purple-600 opacity-75 italic">Official exam sessions attended</p>
+              
+              <div className="heatmap-container exam-heatmap w-full bg-[#f8f8f8] p-4 border-4 border-black">
+                  <CalendarHeatmap
+                    startDate={new Date(`${examYear}-01-01`)}
+                    endDate={new Date(`${examYear}-12-31`)}
+                    values={examData}
+                    classForValue={(value: HeatmapValue) => {
+                      if (!value || value.count === 0) return 'color-exam-0';
+                      return 'color-exam-3';
+                    }}
+                  />
               </div>
-            </div>
-            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border-2 border-purple-100">
-              <Calendar className="w-4 h-4 text-purple-500" />
-              <select
-                value={examYear}
-                onChange={(e) => setExamYear(e.target.value)}
-                className="bg-transparent border-none focus:ring-0 text-sm font-black text-purple-900 cursor-pointer"
-              >
-                {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {loadingExam ? (
-            <div className="h-32 flex flex-col items-center justify-center">
-              <Loader2 className="w-10 h-10 text-purple-500 animate-spin mb-2" />
-              <p className="text-purple-700 font-bold animate-pulse">Syncing exam records...</p>
-            </div>
-          ) : (
-            <div className="heatmap-container exam-heatmap w-full mx-auto">
-              <CalendarHeatmap
-                startDate={new Date(`${examYear}-01-01`)}
-                endDate={new Date(`${examYear}-12-31`)}
-                values={examData}
-                classForValue={(value: HeatmapValue) => {
-                  if (!value || value.count === 0) return 'color-exam-0';
-                  return 'color-exam-3';
-                }}
-                tooltipDataAttrs={(value: HeatmapValue) => {
-                  return {
-                    'data-tip': value && value.date ? `${value.date}: Exam taken` : 'No exam',
-                  };
-                }}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <StatCard 
-          icon={TrendingUp} 
-          title="Knowledge Growth Curve" 
-          color="green"
-          extraHeader={
-            <div className="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <select
-                value={curveYear}
-                onChange={(e) => setCurveYear(e.target.value)}
-                className="bg-transparent border-none focus:ring-0 text-xs font-bold text-slate-600 cursor-pointer p-0"
-              >
-                {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
+      {/* Grid for Chart and Milestones */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Knowledge Growth */}
+        <div className="border-8 border-black bg-white p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+            <div className="flex items-center justify-between mb-8 border-b-4 border-black pb-4">
+               <h3 className="text-3xl font-black uppercase leading-none flex items-center gap-4">
+                   <TrendingUp className="w-8 h-8" strokeWidth={3} />
+                   GROWTH CURVE
+               </h3>
+               <div className="border-4 border-black px-2 py-1 bg-white flex items-center gap-2 text-xs font-black">
+                    <select
+                        value={curveYear}
+                        onChange={(e) => setCurveYear(e.target.value)}
+                        className="bg-transparent outline-none"
+                    >
+                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+               </div>
             </div>
-          }
-        >
-          <div className="h-[250px] relative">
-            {loadingPerformance ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 z-10">
-                <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-2" />
-                <p className="text-xs font-bold text-green-700">Analyzing growth...</p>
-              </div>
-            ) : performanceScoreData.length === 0 ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-                <Activity className="w-8 h-8 mb-2 opacity-20" />
-                <p className="text-sm font-medium">No performance data for {curveYear}</p>
-              </div>
-            ) : null}
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={performanceScoreData}>
-                <defs>
-                  <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={CHART_COLORS.green} stopOpacity={0.8} />
-                    <stop offset="95%" stopColor={CHART_COLORS.green} stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fill: '#64748B', fontSize: 10 }}
-                  stroke="#CBD5E1"
-                  tickFormatter={(val) => val.split('-').slice(1).join('/')}
-                />
-                <YAxis
-                  tick={{ fill: '#64748B', fontSize: 12 }}
-                  stroke="#CBD5E1"
-                  ticks={[0, 25, 50, 75, 100]}
-                  domain={[0, 100]}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="score"
-                  stroke={CHART_COLORS.green}
-                  strokeWidth={3}
-                  fillOpacity={1}
-                  fill="url(#colorScore)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </StatCard>
 
-        {/* Achievements Card */}
-        <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-slate-900">
-              <Trophy className="w-6 h-6 text-purple-600" />
-              Latest Milestones
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="bg-white p-3 rounded-xl border border-green-200 flex items-center gap-4">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Perfect Score!</h4>
-                  <p className="text-xs text-slate-600">Aced the OS Threads quiz</p>
-                </div>
-              </div>
-              <div className="bg-white p-3 rounded-xl border border-orange-200 flex items-center gap-4">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Speed Demon</h4>
-                  <p className="text-xs text-slate-600">Practice completed in record time</p>
-                </div>
-              </div>
-              <div className="bg-white p-3 rounded-xl border border-purple-200 flex items-center gap-4">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Award className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">7-Day Streak</h4>
-                  <p className="text-xs text-slate-600">Learning consistency maintained!</p>
-                </div>
-              </div>
+            <div className="h-[300px] border-4 border-black p-4 bg-[#fcfcfc]">
+                <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={performanceScoreData}>
+                    <CartesianGrid strokeDasharray="0" stroke="#000" strokeOpacity={0.1} />
+                    <XAxis
+                    dataKey="name"
+                    tick={{ fill: '#000', fontSize: 10, fontWeight: 900 }}
+                    stroke="#000"
+                    strokeWidth={2}
+                    tickFormatter={(val) => val.split('-').slice(1).join('/')}
+                    />
+                    <YAxis
+                    tick={{ fill: '#000', fontSize: 12, fontWeight: 900 }}
+                    stroke="#000"
+                    strokeWidth={2}
+                    ticks={[0, 50, 100]}
+                    domain={[0, 100]}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                    type="stepAfter"
+                    dataKey="score"
+                    stroke="#000"
+                    strokeWidth={6}
+                    fill={CHART_COLORS.green}
+                    fillOpacity={1}
+                    />
+                </AreaChart>
+                </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
+        </div>
+
+        {/* Milestones */}
+        <div className="border-8 border-black bg-secondary p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] rotate-[0.5deg]">
+            <h3 className="text-3xl font-black uppercase leading-none mb-10 text-white drop-shadow-[2px_2px_0px_black]">
+                MILESTONES
+            </h3>
+            <div className="space-y-6">
+              {[
+                { icon: Trophy, title: "PERFECT SCORE", desc: "ACED THE MISSION", color: "bg-primary" },
+                { icon: Zap, title: "SPEED DEMON", desc: "RECORD TIME SYNC", color: "bg-info" },
+                { icon: Award, title: "7-DAY STREAK", desc: "CONSISTENT BRAIN ROT", color: "bg-white" }
+              ].map((m, i) => (
+                <div key={i} className="bg-white border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all flex items-center gap-4">
+                  <div className={`w-14 h-14 border-4 border-black ${m.color} flex items-center justify-center flex-shrink-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}>
+                    <m.icon className="w-8 h-8 text-black" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-black text-xl leading-none uppercase">{m.title}</h4>
+                    <p className="text-[10px] font-bold text-black/60 uppercase mt-1">{m.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+        </div>
       </div>
     </div>
   );

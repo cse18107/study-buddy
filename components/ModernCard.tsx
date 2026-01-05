@@ -45,105 +45,107 @@ const ModernCard: React.FC<ModernCardProps> = ({
   return (
     <Card
       className="
-        w-full max-w-sm mx-auto h-[320px] sm:h-[380px]
+        w-full max-w-sm mx-auto h-[400px]
         bg-white
-        border-2 border-slate-100
-        rounded-2xl
-        shadow-lg
+        border-4 border-black
+        rounded-xl
+        shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
         overflow-hidden
-        transition-all duration-300
-        hover:shadow-2xl hover:scale-[1.02] hover:border-purple-200
+        transition-all duration-100
+        hover:translate-x-[-4px] hover:translate-y-[-4px]
+        hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]
         group relative p-0
         cursor-pointer
       "
     >
-      {/* Full-Bleed Image Background */}
-      <img
-        src={imageSrc}
-        alt={name}
-        className="
-          w-full h-full object-cover
-          transition-transform duration-700
-          group-hover:scale-110 group-hover:brightness-105
-        "
-      />
+      {/* Image Container with hard border */}
+      <div className="w-full h-1/2 border-b-4 border-black overflow-hidden bg-primary">
+        <img
+          src={imageSrc}
+          alt={name}
+          className="
+            w-full h-full object-cover
+            transition-transform duration-300
+            group-hover:scale-105
+          "
+        />
+      </div>
 
-      {/* Overlay Container */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-between">
-        {/* Top Section: Dropdown Menu */}
-        <div className="p-4 flex justify-end">
-          {items.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="
-                    p-2 rounded-full
-                    bg-white/90 backdrop-blur-sm
-                    text-slate-700 hover:text-purple-600
-                    transition-all duration-300
-                    hover:bg-white
-                    outline-none focus:ring-2 focus:ring-purple-500
-                    shadow-md hover:shadow-lg
-                  "
-                  aria-label="Menu"
-                >
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white border-slate-200 shadow-xl rounded-xl p-1">
-                {items.map((item, index) => (
-                  <DropdownMenuItem
-                    key={index}
-                    onClick={item.onClick}
-                    className={`
-                      cursor-pointer flex items-center gap-3 px-3 py-2.5 rounded-lg
-                      transition-colors duration-200
-                      ${
-                        item.isDestructive
-                          ? "text-red-600 hover:bg-red-50"
-                          : "text-slate-700 hover:bg-purple-50 hover:text-purple-700"
-                      }
-                    `}
-                  >
-                    {item.icon}
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+      {/* Content Section */}
+      <div className="p-5 flex flex-col h-1/2 justify-between bg-white relative">
+        <div className="absolute top-[-24px] right-4 z-20">
+             {items.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="
+                        p-3 rounded-full
+                        border-4 border-black bg-secondary
+                        text-black hover:bg-green-400
+                        transition-all duration-100
+                        shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                        active:shadow-none active:translate-x-[2px] active:translate-y-[2px]
+                        outline-none
+                      "
+                      aria-label="Menu"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="w-6 h-6" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none p-1 min-w-[160px]">
+                    {items.map((item, index) => (
+                      <DropdownMenuItem
+                        key={index}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          item.onClick();
+                        }}
+                        className={`
+                          cursor-pointer flex items-center gap-3 px-3 py-3 rounded-none
+                          border-b-2 border-black last:border-b-0
+                          transition-colors duration-100
+                          uppercase font-black
+                          ${
+                            item.isDestructive
+                              ? "text-red-600 hover:bg-black hover:text-white"
+                              : "text-black hover:bg-primary"
+                          }
+                        `}
+                      >
+                        {item.icon}
+                        <span className="text-xs">{item.label}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
         </div>
 
-        {/* Bottom Section: Text Content Overlay */}
-        <div
-          className="
-            p-6 pt-20
-            bg-gradient-to-t from-white via-white/95 to-transparent
-            backdrop-blur-sm
-          "
-        >
+        <div>
           {/* Name */}
           <h3
             className="
-              text-2xl font-bold mb-2 tracking-tight
-              text-slate-900
-              drop-shadow-sm
-              group-hover:text-purple-600 transition-colors duration-300
-              font-heading
+              text-2xl font-black mb-3 leading-none
+              text-black uppercase
+              group-hover:bg-primary group-hover:inline-block transition-colors duration-100
             "
           >
             {name}
           </h3>
 
           {/* Description */}
-          <p className="text-sm text-slate-600 leading-snug line-clamp-3">
+          <p className="text-xs font-bold text-black/70 leading-tight line-clamp-4 uppercase">
             {description}
           </p>
         </div>
-      </div>
 
-      {/* Decorative gradient border on hover */}
-      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10"></div>
+        {/* Bottom Bar for "Flex" style */}
+        <div className="mt-4 pt-3 border-t-2 border-black flex justify-between items-center text-[10px] font-black uppercase">
+            <span>Ready to Flex</span>
+            <span className="bg-black text-white px-2 py-0.5 rounded-sm">Vibe Check</span>
+        </div>
+      </div>
     </Card>
   );
 };
