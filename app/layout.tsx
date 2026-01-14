@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Inter, Lexend } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 // Playful heading font - perfect for learning applications
 const poppins = Poppins({
@@ -41,7 +42,9 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${inter.variable} ${lexend.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

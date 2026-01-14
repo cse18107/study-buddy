@@ -27,7 +27,7 @@ const Practice = () => {
       }
 
       setLoading(true);
-      const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU";
+      const token = localStorage.getItem("access_token");
 
       try {
         const response = await fetch(`http://127.0.0.1:8000/api/practices/${practiceId}`, {
@@ -76,7 +76,7 @@ const Practice = () => {
 
   const handleFinish = async () => {
     setSubmitting(true);
-    const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU";
+    const token = localStorage.getItem("access_token");
 
     // Prepare payload in format [{[id]: answerText}]
     const payload = questions.map(q => {

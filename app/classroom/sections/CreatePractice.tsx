@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,49 +29,48 @@ const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetail
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | undefined>(undefined);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchPracticeSessions = async () => {
-      const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU";
-      const classroomId = classroomDetails?.id || "7186c7de-0276-4c8c-a1b9-59b249019c29";
+  const fetchPracticeSessions = useCallback(async () => {
+    const token = localStorage.getItem("access_token");
+    const classroomId = classroomDetails?.id || "7186c7de-0276-4c8c-a1b9-59b249019c29";
 
-      try {
-        const response = await fetch(`http://localhost:8000/api/practices/classroom/${classroomId}`, {
-          method: 'GET',
-          headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // Map API data if needed, or stick to interface. 
-          // API returns { id, title, description, file, classroom_id }
-          // UI uses { id, name, description, image }
-          // We map it here:
-          const mappedData = data.map((item: any) => ({
-            id: item.id,
-            name: item.title,
-            description: item.description,
-            image: item.file
-          }));
-          setSessions(mappedData);
-        } else {
-          console.error("Failed to fetch practice sessions");
+    try {
+      const response = await fetch(`http://localhost:8000/api/practices/classroom/${classroomId}`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
-      } catch (error) {
-        console.error("Error fetching practice sessions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      });
 
-    fetchPracticeSessions();
+      if (response.ok) {
+        const data = await response.json();
+        const mappedData = data.map((item: any) => ({
+          id: item.id,
+          name: item.title,
+          description: item.description,
+          image: item.file
+        }));
+        setSessions(mappedData);
+      } else {
+        console.error("Failed to fetch practice sessions");
+      }
+    } catch (error) {
+      console.error("Error fetching practice sessions:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [classroomDetails]);
 
+  useEffect(() => {
+    fetchPracticeSessions();
+  }, [fetchPracticeSessions]);
+
   const handleImageUpload = (file: File) => {
+    setSelectedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       setImage(reader.result as string);
@@ -79,22 +78,49 @@ const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetail
     reader.readAsDataURL(file);
   };
 
-  const handleCreate = () => {
-    // Ideally this should POST to API, but for now just local state update as per existing code skeleton
-    // If user wants full API integration for creation, we'd add that. 
-    // Current task focus is RENDER LIST from curl.
-    const newSession: PracticeSession = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      name,
-      description,
-      image,
-    };
+  const handleCreate = async () => {
+    setIsCreating(true);
+    const token = localStorage.getItem("access_token");
+    const classroomId = classroomDetails?.id || "7186c7de-0276-4c8c-a1b9-59b249019c29";
 
-    setSessions([newSession, ...sessions]);
-    setName("");
-    setDescription("");
-    setImage(undefined);
-    setOpen(false);
+    const formData = new FormData();
+    formData.append("title", name);
+    formData.append("description", description);
+    formData.append("classroomId", classroomId);
+    
+    // Using the first document ID from classroomDetails if available, else a placeholder
+    const documentId = classroomDetails?.sources?.[0]?.document || "";
+    formData.append("documentId", documentId);
+
+    if (selectedFile) {
+      formData.append("file", selectedFile);
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/api/practices/create", {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        await fetchPracticeSessions();
+        setName("");
+        setDescription("");
+        setImage(undefined);
+        setSelectedFile(null);
+        setOpen(false);
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to create practice session:", errorData);
+      }
+    } catch (error) {
+      console.error("Error creating practice session:", error);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -154,10 +180,10 @@ const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetail
 
                 <Button
                   onClick={handleCreate}
-                  disabled={!name || !description}
+                  disabled={!name || !description || isCreating}
                   className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl h-11 font-semibold"
                 >
-                  Create Session
+                  {isCreating ? "Creating..." : "Create Session"}
                 </Button>
               </div>
             </DialogContent>

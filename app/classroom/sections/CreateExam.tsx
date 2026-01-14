@@ -37,7 +37,7 @@ const ExamSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails })
 
   const router = useRouter();
 
-  const token = typeof window !== 'undefined' ? (localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU") : "";
+  const token = typeof window !== 'undefined' ? (localStorage.getItem("access_token") || "") : "";
   const classroomId = classroomDetails?.id || "7186c7de-0276-4c8c-a1b9-59b249019c29";
 
   const fetchExams = React.useCallback(async () => {
@@ -90,7 +90,7 @@ const ExamSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails })
       formData.append("description", description);
       formData.append("classroomId", classroomId);
       // Using the first document ID from classroomDetails if available, else a placeholder
-      const documentId = classroomDetails?.sources?.[0]?.id || "default_document_id";
+      const documentId = classroomDetails?.sources?.[0]?.document || "";
       formData.append("documentId", documentId);
       formData.append("difficulty", difficulty);
       formData.append("date", date);

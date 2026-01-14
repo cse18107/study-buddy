@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X, ChevronLeft, ChevronRight, Lightbulb, Calendar, Trophy, Clock, Loader2, AlertCircle } from "lucide-react";
-import ThemedStopwatch from "@/components/ThemedStopwatch";
 import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Question {
   id: string;
@@ -33,6 +38,112 @@ const Exam = () => {
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, any>>({});
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
+  
+  // Pre-start Countdown State
+  const [isCountingDown, setIsCountingDown] = useState(true);
+  const [countdownTime, setCountdownTime] = useState(10);
+  
+  // Timer State
+  const EXAM_DURATION = 1 * 60; // 30 minutes in seconds (currently set to 1 min for testing as per user's edit)
+  const [timeLeft, setTimeLeft] = useState(EXAM_DURATION);
+  const [showEndModal, setShowEndModal] = useState(false);
+
+  const formatTime = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const [submitting, setSubmitting] = useState(false);
+  const questions = useMemo(() => examData?.questions || [], [examData]);
+  
+  // Use a ref for answers to ensure the timer effect remains stable 
+  // and handleFinish always has access to the latest answers.
+  const answersRef = React.useRef(userAnswers);
+  useEffect(() => {
+    answersRef.current = userAnswers;
+  }, [userAnswers]);
+
+  const handleFinish = useCallback(async (isAuto = false) => {
+    setSubmitting(true);
+    const token = typeof window !== 'undefined' ? (localStorage.getItem("access_token") || "") : "";
+
+    const payload = questions.map(q => {
+      const answerRaw = answersRef.current[q.id];
+      let finalAnswer = "";
+      if (q.type === "Mcq") {
+        finalAnswer = typeof answerRaw === 'number' ? q.options[answerRaw] : (answerRaw || "");
+      } else {
+        finalAnswer = answerRaw || "";
+      }
+      return { [q.id]: finalAnswer };
+    });
+
+    try {
+      const response = await fetch('http://localhost:8000/api/questions/bulk-update-answers', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        if (isAuto) {
+          setShowEndModal(true);
+        } else {
+          alert("Success! You have finished the exam. Your performance is being evaluated.");
+          const urlParams = new URLSearchParams(window.location.search);
+          urlParams.delete("examid");
+          router.push(`${window.location.pathname}?${urlParams.toString()}`);
+        }
+      } else {
+        if (!isAuto) alert("Failed to submit exam. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting exam:", error);
+      if (!isAuto) alert("An error occurred while submitting your exam.");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [questions, router]);
+
+  // Pre-start Countdown Effect
+  useEffect(() => {
+    if (!isCountingDown) return;
+    
+    const interval = setInterval(() => {
+      setCountdownTime((prev) => {
+        if (prev <= 1) {
+          setIsCountingDown(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isCountingDown]);
+
+  // Main Exam Timer Effect
+  useEffect(() => {
+    if (loading || !examData || showEndModal || isCountingDown) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleFinish(true); // Auto submit
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [loading, examData, showEndModal, handleFinish, isCountingDown]);
 
   useEffect(() => {
     const fetchExam = async () => {
@@ -40,7 +151,7 @@ const Exam = () => {
       
       setLoading(true);
       setError(null);
-      const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU";
+      const token = localStorage.getItem("access_token");
 
       try {
         const response = await fetch(`http://127.0.0.1:8000/api/exams/${examId}`, {
@@ -67,58 +178,6 @@ const Exam = () => {
 
     fetchExam();
   }, [examId]);
-
-  const questions = examData?.questions || [];
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleFinish = async () => {
-    setSubmitting(true);
-    const token = typeof window !== 'undefined' ? (localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU") : "";
-
-    // Prepare payload in format [{[id]: answerText}]
-    const payload = questions.map(q => {
-      const answerRaw = userAnswers[q.id];
-      let finalAnswer = "";
-
-      if (q.type === "Mcq") {
-        finalAnswer = typeof answerRaw === 'number' ? q.options[answerRaw] : (answerRaw || "");
-      } else {
-        finalAnswer = answerRaw || "";
-      }
-
-      return { [q.id]: finalAnswer };
-    });
-
-    try {
-      const response = await fetch('http://localhost:8000/api/questions/bulk-update-answers', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        alert("Success! You have finished the exam. Your performance is being evaluated.");
-        
-        // Use URLSearchParams to preserve other params like 'id' and 'set'
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.delete("examid");
-        router.push(`${window.location.pathname}?${urlParams.toString()}`);
-      } else {
-        const errData = await response.json();
-        console.error("Failed to submit answers:", errData);
-        alert("Failed to submit exam. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error submitting exam:", error);
-      alert("An error occurred while submitting your exam.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const currentQuestion = questions[activeQuestionIndex];
 
@@ -253,6 +312,46 @@ const Exam = () => {
     );
   }
 
+  if (isCountingDown && !loading && !error && examData) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-screen bg-slate-900 text-white p-6 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-orange-500 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-rose-500 blur-[120px] rounded-full animate-pulse stagger-animation" />
+        </div>
+
+        <div className="relative z-10 text-center space-y-8 animate-in fade-in zoom-in duration-700">
+          <div className="space-y-4">
+            <h2 className="text-xl font-black text-orange-400 uppercase tracking-[0.3em] opacity-80">Examination begins in</h2>
+            <div className="text-[12rem] font-black leading-none tracking-tighter tabular-nums text-white drop-shadow-[0_20px_50px_rgba(249,115,22,0.3)]">
+              {countdownTime}
+            </div>
+          </div>
+          
+          <div className="space-y-8">
+            <div className="max-w-md mx-auto p-8 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 text-slate-300 font-medium leading-relaxed">
+              Prepare your workspace and focus. The secure examination timer will start automatically when countdown hits zero.
+            </div>
+
+            <Button
+              onClick={() => {
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.delete("examid");
+                router.push(`${window.location.pathname}?${urlParams.toString()}`);
+              }}
+              variant="outline"
+              className="bg-transparent hover:bg-white/10 text-white border-white/20 rounded-2xl h-14 px-10 font-black text-lg transition-all hover:scale-105 active:scale-95"
+            >
+              <ChevronLeft className="w-5 h-5 mr-3 stroke-[3]" />
+              Return to Classroom
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full h-screen bg-slate-50/50 overflow-hidden font-sans">
       {/* Left Panel - Questions (70%) */}
@@ -328,32 +427,6 @@ const Exam = () => {
 
               {/* Answer Area */}
               {currentQuestion.type === "Mcq" ? renderMCQ() : renderSAQLAQ()}
-
-              {/* Reveal Answer Button */}
-              <Button
-                onClick={() => setShowAnswer(!showAnswer)}
-                className="w-full mt-10 bg-slate-900 hover:bg-black text-white h-14 rounded-2xl font-black text-lg transition-all duration-300 shadow-xl active:scale-[0.98]"
-              >
-                <Lightbulb className="w-6 h-6 mr-3 text-yellow-400" />
-                {showAnswer ? "Secure Model Answer" : "Validate Against Model"}
-              </Button>
-
-              {/* Model Answer Display */}
-              {showAnswer && (
-                <div className="mt-8 p-8 rounded-3xl border-2 border-orange-200 bg-orange-50/50 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                  <div className="flex items-start gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-200">
-                      <Check className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-black text-orange-900 mb-2 text-xl tracking-tight">Model Solution:</h3>
-                      <p className="text-slate-800 leading-relaxed text-lg font-medium italic">
-                        &quot;{currentQuestion.answer}&quot;
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Navigation */}
@@ -367,7 +440,7 @@ const Exam = () => {
               </Button>
 
               <Button
-                onClick={activeQuestionIndex === questions.length - 1 ? handleFinish : handleNext}
+                onClick={() => activeQuestionIndex === questions.length - 1 ? handleFinish(false) : handleNext()}
                 disabled={submitting}
                 className="bg-gradient-to-br from-orange-600 to-rose-600 hover:from-orange-700 hover:to-rose-700 text-white rounded-2xl px-10 h-14 transition-all duration-300 disabled:opacity-30 font-black shadow-xl shadow-orange-200 active:scale-95"
               >
@@ -384,14 +457,20 @@ const Exam = () => {
 
       {/* Right Panel - Timer (30%) */}
       <div className="w-[30%] bg-white border-l border-slate-200/60 p-10 flex flex-col shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
-        <div className="bg-slate-900 rounded-[2.5rem] shadow-2xl p-8 flex-shrink-0 mb-8 border border-slate-800 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full -mr-16 -mt-16" />
-          <div className="relative z-10 flex items-center gap-3 mb-6">
-            <Clock className="w-6 h-6 text-orange-400" />
-            <h3 className="text-xl font-black text-white tracking-tight uppercase">Session Clock</h3>
+        <div className="bg-white rounded-[2.5rem] shadow-xl p-8 flex-shrink-0 mb-8 border border-slate-200 relative overflow-hidden">
+          <div className="relative z-10 flex items-center justify-between mb-4">
+            <h3 className="text-sm font-black text-slate-400 tracking-[0.2em] uppercase">Time Remaining</h3>
+            <Clock className={`w-5 h-5 ${timeLeft < 300 ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`} />
           </div>
-          <div className="relative z-10 text-white">
-            <ThemedStopwatch />
+          <div className={`relative z-10 text-center text-6xl font-black tracking-tighter tabular-nums ${timeLeft < 300 ? 'text-rose-600' : 'text-slate-900'}`}>
+            {formatTime(timeLeft)}
+          </div>
+          {/* Progress Mini Bar */}
+          <div className="mt-6 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+             <div 
+               className={`h-full transition-all duration-1000 ${timeLeft < 300 ? 'bg-rose-500' : 'bg-orange-500'}`}
+               style={{ width: `${(timeLeft / EXAM_DURATION) * 100}%` }}
+             />
           </div>
         </div>
 
@@ -425,6 +504,31 @@ const Exam = () => {
           Secure Session Active
         </div>
       </div>
+      <Dialog open={showEndModal} onOpenChange={setShowEndModal}>
+        <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-0 shadow-2xl max-w-md bg-white">
+          <div className="bg-slate-900 p-8 text-center text-white">
+             <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-10 h-10 text-white" />
+             </div>
+             <DialogTitle className="text-3xl font-black">Exam Session Ended</DialogTitle>
+             <DialogDescription className="text-slate-400 font-medium mt-2">
+               Your session has timed out. All your answers have been securely saved and submitted.
+             </DialogDescription>
+          </div>
+          <div className="p-8 bg-white">
+             <Button 
+               onClick={() => {
+                 const urlParams = new URLSearchParams(window.location.search);
+                 urlParams.delete("examid");
+                 router.push(`${window.location.pathname}?${urlParams.toString()}`);
+               }}
+               className="w-full bg-slate-900 hover:bg-black text-white h-14 rounded-2xl font-black text-lg shadow-xl"
+             >
+               Return to Classroom
+             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

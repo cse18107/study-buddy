@@ -200,7 +200,7 @@ const CreateClassroomModal: React.FC = () => {
       apiFormData.append("image_file", formData.coverImage);
     }
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("access_token");
     if (!token) {
       alert("Authentication token not found. Please log in.");
       return;
@@ -249,32 +249,12 @@ const CreateClassroomModal: React.FC = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {/* Trigger Button - Beautiful Gradient */}
-        <div className="
-          bg-gradient-to-br from-purple-500 to-blue-500
-          h-[320px] sm:h-[380px]
-          hover:from-purple-600 hover:to-blue-600
-          text-white font-semibold 
-          flex flex-col items-center justify-center gap-4
-          rounded-2xl shadow-lg
-          hover:shadow-2xl hover:scale-[1.02]
-          transition-all duration-300
-          cursor-pointer
-          group
-          relative
-          overflow-hidden
-        ">
-          {/* Animated background effect */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          
-          <div className="relative z-10 flex flex-col items-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Plus className="w-8 h-8 text-white" />
-            </div>
-            <span className="text-lg font-bold font-heading">Create New Classroom</span>
-            <span className="text-sm opacity-90">Start learning something new!</span>
-          </div>
-        </div>
+        <Button 
+          className="bg-black text-white hover:bg-neutral-800 transition-colors h-11 px-6 rounded-xl font-medium flex items-center gap-2 group"
+        >
+          <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <span>New Classroom</span>
+        </Button>
       </DialogTrigger>
 
       <DialogContent

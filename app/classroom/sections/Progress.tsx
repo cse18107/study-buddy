@@ -47,7 +47,7 @@ const Progress = () => {
   const [loadingExam, setLoadingExam] = useState(false);
   const [loadingPerformance, setLoadingPerformance] = useState(false);
 
-  const token = typeof window !== 'undefined' ? (localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY3OTIzODg3fQ.MrcP0skIR3MSfg4N2UTYKp60BwXxQoqILme9oDGWguU") : "";
+  const token = typeof window !== 'undefined' ? (localStorage.getItem("access_token") || "") : "";
 
   const fetchStats = useCallback(async (type: 'practice' | 'exam', year: string) => {
     const isPractice = type === 'practice';

@@ -1,8 +1,8 @@
 import React, {useState, useRef, useEffect} from "react";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {Bot, Send, Sparkles} from "lucide-react";
+import {Bot, Send, Sparkles, Trash2, Copy, Check} from "lucide-react";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 
 interface Message {
   id: string;
@@ -20,8 +20,30 @@ const Chat: React.FC<ChatProps> = ({ classroomDetails }) => {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const suggestions = [
+    "Summarize this topic",
+    "Key concepts to remember",
+    "Create a quiz for me",
+    "Explain like I'm five"
+  ];
+
+  const clearChat = () => {
+    setMessages([{id: "1", text: "Hello! I'm your AI study buddy. How can I help you learn today? 📚", sender: "bot"}]);
+  };
+
+  const copyToClipboard = (text: string, id: string) => {
+    // Strip HTML for copying
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = text;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    navigator.clipboard.writeText(plainText);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,7 +61,7 @@ const Chat: React.FC<ChatProps> = ({ classroomDetails }) => {
     setInput("");
     setIsTyping(true);
 
-    const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY1NjMzODU3fQ.KLK4GyPoU-7aw2bMmvIeP-pToo6ga3OzN8qbMEgLDzI";
+    // const token = localStorage.getItem("access_token");
     
     // Determine IDs from props or fallbacks
     // Use the first source's ID if available
@@ -94,100 +116,172 @@ const Chat: React.FC<ChatProps> = ({ classroomDetails }) => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") sendMessage();
-  };
+
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background overflow-hidden">
-      {/* Header with Gradient */}
-      <div className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 p-6 text-white shadow-lg">
-        <div className="flex items-center gap-3 justify-center">
-          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center animate-pulse">
-            <Bot className="w-6 h-6" />
+    <div className="flex flex-col h-screen w-full bg-[#f8fafc] overflow-hidden">
+      {/* Header with Glassmorphism */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200/60 p-4 shadow-sm">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200">
+                <Bot className="w-7 h-7 text-white" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-sm animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent leading-none mb-1">
+                Study Buddy AI
+              </h2>
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-green-500" />
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Online & Ready</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold font-heading">AI Study Assistant</h2>
-            <p className="text-sm opacity-90">Ask me anything about your studies!</p>
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearChat}
+                    className="h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors rounded-xl"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Clear conversation</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          <Sparkles className="w-6 h-6 animate-pulse" />
         </div>
       </div>
 
       {/* Messages Area */}
       <div className="flex-1 overflow-hidden relative">
-        <ScrollArea className="h-full px-6 py-6" ref={scrollRef}>
-          <div className="space-y-6 max-w-4xl mx-auto pb-4">
-            {messages.map((msg) => (
+        <ScrollArea className="h-full" ref={scrollRef}>
+          <div className="space-y-8 max-w-4xl mx-auto px-6 py-10">
+            {messages.map((msg, idx) => (
               <div
                 key={msg.id}
-                className={`flex ${
+                className={`flex group ${
                   msg.sender === "user" ? "justify-end" : "justify-start"
-                } animate-slide-up`}
+                } animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out`}
+                style={{ animationDelay: `${idx * 50}ms` }}
               >
                 {msg.sender === "bot" && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mr-3 shadow-lg flex-shrink-0 mt-1">
-                    <Bot className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mr-4 shadow-sm flex-shrink-0 mt-1">
+                    <Bot className="w-6 h-6 text-blue-600" />
                   </div>
                 )}
-                <div
-                  className={`max-w-[85%] px-6 py-4 rounded-2xl text-sm shadow-md ${
-                    msg.sender === "user"
-                      ? "bg-gradient-to-br from-purple-500 to-blue-500 text-white rounded-tr-none"
-                      : "bg-white text-slate-800 border border-slate-200 rounded-tl-none prose prose-slate max-w-none"
-                  }`}
-                >
-                  {msg.sender === "bot" ? (
-                     <div dangerouslySetInnerHTML={{ __html: msg.text }} />
-                  ) : (
-                    <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                  )}
+                
+                <div className={`relative max-w-[80%] ${msg.sender === "user" ? "text-right" : "text-left"}`}>
+                  <div
+                    className={`inline-block px-5 py-3.5 rounded-3xl text-[0.9375rem] shadow-sm relative transition-all duration-300 ${
+                      msg.sender === "user"
+                        ? "bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-tr-none hover:shadow-blue-200/50 hover:shadow-lg"
+                        : "bg-white text-slate-700 border border-slate-200/60 rounded-tl-none hover:border-slate-300 group-hover:shadow-md"
+                    }`}
+                  >
+                    {msg.sender === "bot" ? (
+                      <div className="flex flex-col gap-2">
+                        <div 
+                          className="prose prose-slate prose-chat prose-sm sm:prose-base max-w-none leading-relaxed prose-headings:text-slate-900 prose-p:text-slate-700 prose-strong:text-slate-900 prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-blue-600 prose-code:before:content-none prose-code:after:content-none"
+                          dangerouslySetInnerHTML={{ __html: msg.text }} 
+                        />
+                        <div className="flex items-center justify-end border-t border-slate-100 pt-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                            onClick={() => copyToClipboard(msg.text, msg.id)}
+                          >
+                            {copiedId === msg.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
             
             {isTyping && (
-              <div className="flex justify-start animate-bounce-in">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center mr-3 shadow-lg mt-1">
-                  <Bot className="w-5 h-5 text-white" />
+              <div className="flex justify-start animate-in fade-in duration-300">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mr-4 shadow-sm mt-1">
+                  <Bot className="w-6 h-6 text-blue-600" />
                 </div>
-                <div className="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-md rounded-tl-none">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="bg-white px-5 py-4 rounded-3xl border border-slate-200/60 shadow-sm rounded-tl-none">
+                  <div className="flex space-x-1.5">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:-0.3s]" />
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:-0.15s]" />
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-duration:0.8s]" />
                   </div>
                 </div>
               </div>
             )}
-            {/* Invisible div to scroll to */}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </div>
 
       {/* Input Area */}
-      <div className="flex gap-3 p-6 bg-white border-t border-slate-200 shadow-lg">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            // Use onKeyDown for better Enter handling (e.g. avoid double submit if IME)
-            if (e.key === "Enter" && !e.shiftKey) { 
-              e.preventDefault(); 
-              sendMessage(); 
-            }
-          }}
-          placeholder="Ask me anything... 💬"
-          className="flex-1 bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-xl h-12 px-4"
-        />
-        <Button
-          onClick={sendMessage}
-          disabled={isTyping || !input.trim()}
-          className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 rounded-xl h-12 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Send className="w-5 h-5" />
-        </Button>
+      <div className="relative z-10 max-w-5xl mx-auto w-full px-6 pb-8 pt-2">
+        {/* Suggestions */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+          {suggestions.map((text) => (
+            <button
+              key={text}
+              onClick={() => {
+                setInput(text);
+                // Optional: Auto-send after click? Maybe not, let user edit.
+              }}
+              className="whitespace-nowrap px-4 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3 h-3" />
+              {text}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[1.5rem] blur opacity-10 group-focus-within:opacity-20 transition duration-300" />
+          <div className="relative flex items-end gap-3 p-2 bg-white border border-slate-200 shadow-xl rounded-[1.4rem]">
+            <textarea
+              rows={1}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // Auto-resize textarea
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) { 
+                  e.preventDefault(); 
+                  sendMessage(); 
+                }
+              }}
+              placeholder="Ask a question about your studies..."
+              className="flex-1 bg-transparent border-0 text-slate-900 placeholder-slate-400 focus:ring-0 rounded-xl py-3 px-4 resize-none max-h-32 text-[0.9375rem] leading-relaxed"
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={isTyping || !input.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-[1rem] h-11 w-11 p-0 flex-shrink-0 shadow-lg shadow-blue-200 transition-all duration-300 disabled:opacity-50 disabled:bg-slate-200 disabled:shadow-none mb-0.5"
+            >
+              <Send className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+        <p className="text-[10px] text-center text-slate-400 mt-3 font-medium uppercase tracking-widest">
+          AI-generated responses may contain inaccuracies. Verify important info.
+        </p>
       </div>
     </div>
   );
