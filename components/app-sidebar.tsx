@@ -1,5 +1,5 @@
 'use client';
-import {Calendar, Settings, Newspaper, ChartNoAxesCombined, BookOpenCheck, Bot, GraduationCap} from "lucide-react";
+import {Calendar, Settings, Newspaper, ChartNoAxesCombined, BookOpenCheck, Bot, GraduationCap, LogOut} from "lucide-react";
 
 import {
   Sidebar,
@@ -10,9 +10,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 // Menu items with colors for learner-friendly design
 const items = [
@@ -85,6 +87,13 @@ export function AppSidebar() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const currentSet = searchParams?.get("set") || "learn";
+    const examId = searchParams?.get("examid");
+    const { logout } = useAuth();
+
+    // Hide sidebar if an exam is active
+    if (examId) {
+      return null;
+    }
   
   return (
     <Sidebar className="bg-white border-r border-slate-200">
@@ -147,6 +156,22 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="p-4 bg-white border-t border-slate-100">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              asChild 
+              className="w-full justify-start gap-3 px-4 py-3 text-slate-700 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-300 group cursor-pointer"
+              onClick={logout}
+            >
+              <div>
+                <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium">Logout</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

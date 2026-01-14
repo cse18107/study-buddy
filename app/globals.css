@@ -611,3 +611,24 @@
 .heatmap-container svg {
   @apply w-full h-auto;
 }
+/* ========== UTILITY CLASSES ENHANCEMENTS ========== */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Fallback Prose Styles for Chat */
+.prose-chat h1 { @apply text-2xl font-bold mb-4; }
+.prose-chat h2 { @apply text-xl font-bold mb-3; }
+.prose-chat h3 { @apply text-lg font-bold mb-2; }
+.prose-chat p { @apply mb-3 leading-relaxed; }
+.prose-chat ul { @apply list-disc ml-5 mb-3; }
+.prose-chat ol { @apply list-decimal ml-5 mb-3; }
+.prose-chat li { @apply mb-1; }
+.prose-chat code { @apply bg-slate-100 px-1.5 py-0.5 rounded text-blue-600 font-mono text-sm; }
+.prose-chat pre { @apply bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto my-4; }
+.prose-chat pre code { @apply bg-transparent p-0 text-inherit; }
+

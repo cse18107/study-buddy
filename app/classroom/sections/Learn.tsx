@@ -26,7 +26,7 @@ const Learn: React.FC<LearnProps> = ({ classroomDetails }) => {
 
   const handleGenerateContent = async () => {
     setIsGenerating(true);
-    const token = localStorage.getItem("token") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzYWlrYXRAZ21haWwuY29tIiwiZXhwIjoxNzY1NjMzODU3fQ.KLK4GyPoU-7aw2bMmvIeP-pToo6ga3OzN8qbMEgLDzI";
+    const token = localStorage.getItem("access_token");
 
     try {
       // Using the exact curl endpoint provided (which happens to be the classroom detail endpoint)
