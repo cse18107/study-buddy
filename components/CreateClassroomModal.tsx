@@ -17,13 +17,13 @@ import {
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 // import {Textarea} from "@/components/ui/textarea";
+import { getApiUrl } from '@/lib/api-config';
 
 // --- Type Definitions ---
 interface ClassroomFormData {
   name: string;
   subject: string;
   description: string;
-  coverImage: File | null;
   document: File | null;
 }
 
@@ -159,7 +159,6 @@ const CreateClassroomModal: React.FC = () => {
     name: "",
     subject: "",
     description: "",
-    coverImage: null,
     document: null,
   });
 
@@ -173,11 +172,7 @@ const CreateClassroomModal: React.FC = () => {
     }));
   };
 
-  // Handlers for updating file state using the custom input
-  const setCoverImage = (file: File | null) => {
-    setFormData((prev) => ({...prev, coverImage: file}));
-  };
-
+  // Handler for updating file state using the custom input
   const setDocument = (file: File | null) => {
     setFormData((prev) => ({...prev, document: file}));
   };
@@ -196,9 +191,6 @@ const CreateClassroomModal: React.FC = () => {
     if (formData.document) {
       apiFormData.append("pdf_file", formData.document);
     }
-    if (formData.coverImage) {
-      apiFormData.append("image_file", formData.coverImage);
-    }
 
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -207,7 +199,7 @@ const CreateClassroomModal: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/classrooms/", {
+      const response = await fetch(getApiUrl('/api/classrooms/'), {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -231,7 +223,6 @@ const CreateClassroomModal: React.FC = () => {
         name: "",
         subject: "",
         description: "",
-        coverImage: null,
         document: null,
       });
 
@@ -328,16 +319,7 @@ const CreateClassroomModal: React.FC = () => {
             />
           </div> */}
 
-          {/* 4. Cover Image (Drag & Drop) */}
-          <DragDropFileInput
-            label="Cover Image"
-            icon={<Upload className={iconClasses} />}
-            accept="image/*"
-            file={formData.coverImage}
-            setFile={setCoverImage}
-          />
-
-          {/* 5. Document (Drag & Drop) */}
+          {/* 4. Document (Drag & Drop) */}
           <DragDropFileInput
             label="Initial Document (Syllabus, etc.)"
             icon={<FileText className={iconClasses} />}

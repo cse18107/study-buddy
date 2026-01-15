@@ -10,6 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Image as ImageIcon, Target, Calendar, Clock, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getApiUrl } from '@/lib/api-config';
+
+interface Question {
+  assignedMarks: number;
+  givenMarks: number;
+}
 
 interface ExamSession {
   id: string;
@@ -19,6 +25,9 @@ interface ExamSession {
   classroom_id: string;
   difficulty: string;
   date: string;
+  status: string;
+  userMarks: number;
+  totalMarks: number;
 }
 
 const ExamSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails }) => {
@@ -43,7 +52,7 @@ const ExamSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails })
   const fetchExams = React.useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/classroom/${classroomId}`, {
+      const response = await fetch(getApiUrl(`/api/exams/classroom/${classroomId}`), {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -96,7 +105,7 @@ const ExamSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails })
       formData.append("date", date);
       formData.append("file", selectedFile);
 
-      const response = await fetch("http://127.0.0.1:8000/api/exams/create", {
+      const response = await fetch(getApiUrl("/api/exams/create"), {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -313,6 +322,29 @@ const ExamSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails })
                           {new Date(session.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
+
+                    <div className="mb-6">
+                      {session.status === "Submitted" && (
+                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold border border-yellow-200">
+                          <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse" />
+                          Submitted & Pending Review
+                        </div>
+                      )}
+                      
+                      {session.status === "Evaluated" && (
+                        <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                          <div className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Score Achieved</div>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-bold text-emerald-700">
+                              {session?.userMarks}
+                            </span>
+                            <span className="text-sm font-medium text-emerald-500">
+                              / {session?.totalMarks}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                       <div className="flex items-center gap-3 text-slate-500 bg-slate-50 p-2.5 rounded-xl">
                         <Clock className="w-4 h-4 text-blue-500" />
                         <span className="text-xs font-semibold">

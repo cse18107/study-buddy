@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles, RefreshCw } from "lucide-react";
 // import { dummyContent } from '../dummyContent';
 import { generateClassroomHtml } from "@/lib/contentGenerator";
+import { getApiUrl } from '@/lib/api-config';
 
 // Initial props interface (flexible)
 interface LearnProps {
@@ -31,7 +32,7 @@ const Learn: React.FC<LearnProps> = ({ classroomDetails }) => {
     try {
       // Using the exact curl endpoint provided (which happens to be the classroom detail endpoint)
       // Assuming valid GET request triggers generation or returns the content field
-      const response = await fetch(`http://127.0.0.1:8000/api/sources/generate-content`, {
+      const response = await fetch(getApiUrl(`/api/sources/generate-content`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

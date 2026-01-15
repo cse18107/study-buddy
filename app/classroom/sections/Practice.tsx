@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X, ChevronLeft, ChevronRight, Lightbulb, Trophy, Target, Loader2 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
-
 import { threadQuizData } from "./threadQuizData";
+import { useAuth } from "@/context/AuthContext";
+import { getApiUrl } from '@/lib/api-config';
 
 const Practice = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const practiceId = searchParams.get("practiceid");
+  const { logout } = useAuth();
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -17,6 +19,7 @@ const Practice = () => {
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, any>>({});
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
+  const [practiceStatus, setPracticeStatus] = useState<"Created" | "Submitted" | "Evaluated">("Created");
 
   useEffect(() => {
     const fetchQuizData = async () => {
@@ -30,7 +33,7 @@ const Practice = () => {
       const token = localStorage.getItem("access_token");
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/practices/${practiceId}`, {
+        const response = await fetch(getApiUrl(`/api/practices/${practiceId}`), {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -39,6 +42,8 @@ const Practice = () => {
 
         if (response.ok) {
           const data = await response.json();
+          setPracticeStatus(data.status || "Created");
+          
           // Map API questions to internal format
           const mappedQuestions = data.questions.map((q: any) => {
             // Find correct option index for MCQ
@@ -55,10 +60,33 @@ const Practice = () => {
               correctOptionIndex: correctIndex,
               modelAnswer: q.answer,
               difficulty: q.difficulty,
-              sourceReference: "Fetched from API" 
+              sourceReference: "Fetched from API",
+              givenMarks: q.givenMarks,
+              assignedMarks: q.assignedMarks || 1 // Default if missing
             };
           });
           setQuestions(mappedQuestions);
+
+          // If evaluated, populate user answers
+          if (data.status === "Evaluated") {
+             const initialAnswers: Record<string, any> = {};
+             data.questions.forEach((q: any) => {
+                 // Try to find submitted answer field, falling back or checking structure
+                 // Assuming 'submittedAnswer' based on pattern
+                 const ans = q.submittedAnswer || ""; 
+                 
+                 if (q.type === "Mcq" && q.options) {
+                     const ansIdx = q.options.indexOf(ans);
+                     if (ansIdx !== -1) initialAnswers[q.id] = ansIdx;
+                 } else {
+                     initialAnswers[q.id] = ans;
+                 }
+             });
+             setUserAnswers(initialAnswers);
+             setShowAnswer(true);
+          }
+        } else if (response.status === 401) {
+            logout(); // Handle 401 Unauthorized
         } else {
             console.error("Failed to fetch quiz");
             setQuestions(threadQuizData.questions); // Fallback on error?
@@ -72,7 +100,7 @@ const Practice = () => {
     };
 
     fetchQuizData();
-  }, [practiceId]);
+  }, [practiceId, logout]);
 
   const handleFinish = async () => {
     setSubmitting(true);
@@ -93,7 +121,7 @@ const Practice = () => {
     });
 
     try {
-      const response = await fetch('http://localhost:8000/api/questions/bulk-update-answers', {
+      const response = await fetch(getApiUrl('/api/questions/bulk-update-answers'), {
         method: 'POST',
         headers: {
           'accept': 'application/json',
@@ -109,6 +137,8 @@ const Practice = () => {
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.delete("practiceid");
         router.push(`${window.location.pathname}?${urlParams.toString()}`);
+      } else if (response.status === 401) {
+          logout();
       } else {
         const errData = await response.json();
         console.error("Failed to submit answers:", errData);
@@ -130,6 +160,33 @@ const Practice = () => {
     );
   }
 
+  // Submitted / Blocking State
+  if (practiceStatus === "Submitted") {
+      return (
+        <div className="flex flex-col items-center justify-center w-full h-screen bg-slate-50 p-6">
+            <div className="bg-white p-10 rounded-3xl shadow-xl border border-slate-200 text-center max-w-lg">
+                <div className="bg-purple-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Target className="w-10 h-10 text-purple-500" />
+                </div>
+                <h2 className="text-3xl font-bold text-slate-900 mb-4">Practice Submitted</h2>
+                <p className="text-slate-500 text-lg mb-8">
+                    Your practice session has been submitted and is currently being evaluated. Please check back soon.
+                </p>
+                <Button 
+                    onClick={() => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        urlParams.delete("practiceid");
+                        router.push(`${window.location.pathname}?${urlParams.toString()}`);
+                    }}
+                    className="w-full bg-slate-900 hover:bg-black text-white rounded-xl h-14 font-bold text-lg shadow-lg"
+                >
+                    Return to Classroom
+                </Button>
+            </div>
+        </div>
+      );
+  }
+
   if (questions.length === 0) {
       return (
         <div className="w-full mx-auto bg-background min-h-screen flex items-center justify-center">
@@ -142,8 +199,12 @@ const Practice = () => {
   }
 
   const currentQuestion = questions[activeQuestionIndex];
+  const isEvaluated = practiceStatus === "Evaluated";
 
   const handleAnswerChange = (value: any) => {
+    // Disable changes if evaluated
+    if (isEvaluated) return;
+    
     setUserAnswers({
       ...userAnswers,
       [currentQuestion.questionId]: value,
@@ -163,21 +224,25 @@ const Practice = () => {
       setActiveQuestionIndex(activeQuestionIndex - 1);
     }
   };
+  
+  // Calculate marks
+  const totalMarks = questions.reduce((sum, q) => sum + (q.assignedMarks || 1), 0);
+  const obtainedMarks = questions.reduce((sum, q) => sum + (q.givenMarks || 0), 0);
 
   const renderMCQ = () => (
     <div className="space-y-3">
       {currentQuestion.options!.map((option: string, index: number) => {
         const isSelected = userAnswers[currentQuestion.questionId] === index;
         const isCorrect =
-          showAnswer && index === currentQuestion.correctOptionIndex;
+          (showAnswer || isEvaluated) && index === currentQuestion.correctOptionIndex;
         const isIncorrect =
-          showAnswer &&
+          (showAnswer || isEvaluated) &&
           isSelected &&
           index !== currentQuestion.correctOptionIndex;
 
         let optionClasses = `bg-white border-2 border-slate-200 text-slate-900 px-5 py-4 rounded-xl cursor-pointer transition-all duration-300 hover:border-purple-400 hover:shadow-md`;
 
-        if (showAnswer) {
+        if (showAnswer || isEvaluated) {
           if (isCorrect) {
             optionClasses =
               "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-2 border-green-500 shadow-lg shadow-green-500/30 animate-success-pop";
@@ -186,6 +251,8 @@ const Practice = () => {
               "bg-red-50 border-2 border-red-300 text-red-600 opacity-60 line-through";
           } else if (isSelected) {
             optionClasses = `bg-slate-100 border-2 border-slate-300 opacity-50`;
+          } else {
+             optionClasses = `bg-slate-50 border-2 border-slate-100 text-slate-400 opacity-50`;
           }
         } else if (isSelected) {
           optionClasses = `bg-purple-50 border-2 border-purple-500 text-purple-900 shadow-md`;
@@ -195,7 +262,7 @@ const Practice = () => {
           <div
             key={index}
             className={optionClasses}
-            onClick={() => !showAnswer && handleAnswerChange(index)}
+            onClick={() => (!showAnswer && !isEvaluated) && handleAnswerChange(index)}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -226,7 +293,7 @@ const Practice = () => {
         rows={currentQuestion.type === "LAQ" ? 8 : 4}
         value={userAnswers[currentQuestion.questionId] || ""}
         onChange={(e) => handleAnswerChange(e.target.value)}
-        disabled={showAnswer}
+        disabled={showAnswer || isEvaluated}
         className="
           w-full bg-white border-2 border-slate-200 text-slate-900
           placeholder-slate-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20
@@ -262,13 +329,24 @@ const Practice = () => {
             <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3 font-heading">
               <Target className="w-8 h-8 text-blue-500" />
               Practice Quiz
+              {isEvaluated && <span className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded ml-2">Review Mode</span>}
             </h1>
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-purple-500" />
-              <span className="text-sm font-semibold text-slate-600">
-                Question {activeQuestionIndex + 1} of {questions.length}
-              </span>
-            </div>
+            
+            {isEvaluated ? (
+                 <div className="flex items-center gap-4">
+                    <div className="text-right">
+                       <p className="text-sm text-slate-500 uppercase font-bold tracking-wider">Total Score</p>
+                       <p className="text-2xl font-black text-purple-600">{obtainedMarks} / {totalMarks}</p>
+                    </div>
+                 </div>
+            ) : (
+                <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-purple-500" />
+                <span className="text-sm font-semibold text-slate-600">
+                    Question {activeQuestionIndex + 1} of {questions.length}
+                </span>
+                </div>
+            )}
           </div>
           
           {/* Progress Bar */}
@@ -304,9 +382,18 @@ const Practice = () => {
                   </span>
                 </div>
               </div>
-              <span className="text-sm text-slate-500">
-                Ref: {currentQuestion.sourceReference || "N/A"}
-              </span>
+              
+              {isEvaluated ? (
+                 <div className={`px-3 py-1 rounded-lg border ${
+                     (currentQuestion.givenMarks || 0) > 0 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'
+                 }`}>
+                     <span className="text-sm font-bold">Score: {currentQuestion.givenMarks || 0} / {currentQuestion.assignedMarks || 1}</span>
+                 </div>
+              ) : (
+                <span className="text-sm text-slate-500">
+                    Ref: {currentQuestion.sourceReference || "N/A"}
+                </span>
+              )}
             </div>
 
             {/* Question Text */}
@@ -317,17 +404,19 @@ const Practice = () => {
             {/* Answer Area */}
             {currentQuestion.type === "MCQ" ? renderMCQ() : renderSAQLAQ()}
 
-            {/* Reveal Answer Button */}
-            <Button
-              onClick={() => setShowAnswer(!showAnswer)}
-              className="w-full mt-6 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white h-12 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              <Lightbulb className="w-5 h-5 mr-2" />
-              {showAnswer ? "Hide Model Answer" : "Reveal Model Answer"}
-            </Button>
+            {/* Reveal Answer Button - Hide in review since auto shown */}
+            {!isEvaluated && (
+                <Button
+                onClick={() => setShowAnswer(!showAnswer)}
+                className="w-full mt-6 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white h-12 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                <Lightbulb className="w-5 h-5 mr-2" />
+                {showAnswer ? "Hide Model Answer" : "Reveal Model Answer"}
+                </Button>
+            )}
 
             {/* Model Answer Display */}
-            {showAnswer && (
+            {(showAnswer || isEvaluated) && (
               <div className="mt-6 p-6 rounded-xl border-2 border-purple-200 bg-purple-50 animate-slide-up">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0">
@@ -353,20 +442,38 @@ const Practice = () => {
             >
               <ChevronLeft className="w-5 h-5 mr-1" /> Previous
             </Button>
-
-            <Button
-              onClick={activeQuestionIndex === questions.length - 1 ? handleFinish : handleNext}
-              disabled={submitting}
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl px-6 h-12 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed font-semibold shadow-lg"
-            >
-              {submitting ? (
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              ) : null}
-              {activeQuestionIndex === questions.length - 1
-                ? (submitting ? "Submitting..." : "Finish Quiz")
-                : "Next Question"}
-              {!submitting && <ChevronRight className="w-5 h-5 ml-1" />}
-            </Button>
+            
+            {isEvaluated ? (
+                <Button
+                onClick={() => {
+                     if (activeQuestionIndex === questions.length - 1) {
+                         const urlParams = new URLSearchParams(window.location.search);
+                         urlParams.delete("practiceid");
+                         router.push(`${window.location.pathname}?${urlParams.toString()}`);
+                     } else {
+                         handleNext();
+                     }
+                }}
+                className="bg-slate-900 text-white hover:bg-black rounded-xl px-6 h-12 transition-all font-semibold shadow-lg"
+                >
+                {activeQuestionIndex === questions.length - 1 ? "Close Review" : "Next"} {' '}
+                {activeQuestionIndex !== questions.length - 1 && <ChevronRight className="w-5 h-5 ml-1" />}
+                </Button>
+            ) : (
+                <Button
+                onClick={activeQuestionIndex === questions.length - 1 ? handleFinish : handleNext}
+                disabled={submitting}
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-xl px-6 h-12 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed font-semibold shadow-lg"
+                >
+                {submitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                ) : null}
+                {activeQuestionIndex === questions.length - 1
+                    ? (submitting ? "Submitting..." : "Finish Quiz")
+                    : "Next Question"}
+                {!submitting && <ChevronRight className="w-5 h-5 ml-1" />}
+                </Button>
+            )}
           </div>
         </div>
       </div>

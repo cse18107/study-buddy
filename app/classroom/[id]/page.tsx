@@ -10,6 +10,7 @@ import Documents from '../sections/Documents';
 import Settings from '../sections/Settings';
 import PracticeSessions from '../sections/CreatePractice';
 import ExamSessions from '../sections/CreateExam';
+import { getApiUrl } from '@/lib/api-config';
 
 const Page = () => {
   const { id } = useParams();
@@ -27,7 +28,7 @@ const Page = () => {
       const token = localStorage.getItem("access_token");
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/classrooms/${id}`, {
+        const response = await fetch(getApiUrl(`/api/classrooms/${id}`), {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -65,7 +66,7 @@ const Page = () => {
     {set === 'exam' && !examid && <ExamSessions {...props as any} />}
     {set === 'progress' && <Progress {...props as any} />}
     {set === 'documents' && <Documents {...props as any} />}
-    {set === 'settings' && <Settings {...props as any} />}
+    {/* {set === 'settings' && <Settings {...props as any} />} */}
   </div>;
 };
 

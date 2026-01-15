@@ -1,5 +1,5 @@
 'use client';
-import {Calendar, Settings, Newspaper, ChartNoAxesCombined, BookOpenCheck, Bot, GraduationCap, LogOut} from "lucide-react";
+import {Calendar, Settings, Newspaper, ChartNoAxesCombined, BookOpenCheck, Bot, GraduationCap, LogOut, Home} from "lucide-react";
 
 import {
   Sidebar,
@@ -18,6 +18,16 @@ import { useAuth } from "@/context/AuthContext";
 
 // Menu items with colors for learner-friendly design
 const items = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: Home,
+    color: "text-slate-500",
+    hoverColor: "hover:text-slate-600",
+    bgColor: "hover:bg-slate-50",
+    description: "Back to home",
+    isExternal: true // Mark as external/absolute URL
+  },
   {
     title: "Learn",
     url: "?set=learn",
@@ -72,15 +82,15 @@ const items = [
     bgColor: "hover:bg-indigo-50",
     description: "Access materials"
   },
-  {
-    title: "Settings",
-    url: "?set=settings",
-    icon: Settings,
-    color: "text-slate-500",
-    hoverColor: "hover:text-slate-600",
-    bgColor: "hover:bg-slate-50",
-    description: "Customize experience"
-  },
+  // {
+  //   title: "Settings",
+  //   url: "?set=settings",
+  //   icon: Settings,
+  //   color: "text-slate-500",
+  //   hoverColor: "hover:text-slate-600",
+  //   bgColor: "hover:bg-slate-50",
+  //   description: "Customize experience"
+  // },
 ];
 
 export function AppSidebar() {
@@ -114,7 +124,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
               {items.map((item) => {
-                const isActive = currentSet === item.url.split('=')[1];
+                const isActive = item.isExternal ? false : currentSet === item.url.split('=')[1];
                 const Icon = item.icon;
                 
                 return (

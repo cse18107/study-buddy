@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Trash2, Edit, Calendar, BookOpen } from "lucide-react";
+import { MoreHorizontal, Trash2, Calendar, BookOpen } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -16,7 +16,7 @@ interface MenuItem {
 }
 
 interface ModernCardProps {
-  imageSrc: string;
+  imageSrc?: string; // Optional now, won't be used
   name: string;
   description: string;
   onDelete?: () => void;
@@ -25,7 +25,6 @@ interface ModernCardProps {
 }
 
 const ModernCard: React.FC<ModernCardProps> = ({
-  imageSrc,
   name,
   description,
   onDelete,
@@ -47,54 +46,72 @@ const ModernCard: React.FC<ModernCardProps> = ({
   const items =
     menuItems.length > 0 ? menuItems : onDelete ? defaultMenuItems : [];
 
+  // Get minimalist accent color based on subject
+  const getAccentColor = () => {
+    const subjectLower = subject?.toLowerCase() || '';
+    
+    if (subjectLower.includes('math') || subjectLower.includes('calculus') || subjectLower.includes('algebra')) {
+      return { main: 'bg-blue-500', light: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' };
+    } else if (subjectLower.includes('science') || subjectLower.includes('physics') || subjectLower.includes('chemistry')) {
+      return { main: 'bg-purple-500', light: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200' };
+    } else if (subjectLower.includes('english') || subjectLower.includes('literature') || subjectLower.includes('language')) {
+      return { main: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' };
+    } else if (subjectLower.includes('history') || subjectLower.includes('social')) {
+      return { main: 'bg-orange-500', light: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200' };
+    } else if (subjectLower.includes('art') || subjectLower.includes('music')) {
+      return { main: 'bg-pink-500', light: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200' };
+    } else if (subjectLower.includes('computer') || subjectLower.includes('tech') || subjectLower.includes('coding')) {
+      return { main: 'bg-cyan-500', light: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-200' };
+    } else {
+      return { main: 'bg-slate-500', light: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' };
+    }
+  };
+
+  const accentColor = getAccentColor();
+
   return (
     <Card
       className="
-        group relative w-full h-[320px] 
-        rounded-3xl overflow-hidden border-0 
-        shadow-lg transition-all duration-500
-        hover:shadow-2xl hover:-translate-y-2
+        group relative w-full h-[280px] 
+        rounded-2xl overflow-hidden 
+        border border-neutral-200/60
         bg-white
+        shadow-sm hover:shadow-xl
+        transition-all duration-300
+        hover:-translate-y-1
       "
     >
-      {/* Image Background with Gradient Overlay */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={imageSrc}
-          alt={name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
-      </div>
+      {/* Minimalist Top Accent Strip */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${accentColor.main}`} />
 
       {/* Content Container */}
-      <div className="absolute inset-0 z-10 flex flex-col justify-between p-6">
+      <div className="relative h-full flex flex-col p-6">
         
         {/* Top Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start mb-6">
           {subject && (
-            <span className="
-              px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-              bg-white/20 backdrop-blur-md text-white border border-white/10
-            ">
+            <span className={`
+              px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wide
+              ${accentColor.light} ${accentColor.text}
+            `}>
               {subject}
             </span>
           )}
           
-          <div className="ml-auto">
+          <div className={`ml-auto ${!subject ? '' : ''}`}>
              {items.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                   <button className="
-                    p-2 rounded-full 
-                    bg-black/20 hover:bg-white/20 \
-                    backdrop-blur-md text-white 
-                    transition-colors border border-white/10
+                    p-2 rounded-lg
+                    text-neutral-400 hover:text-neutral-600
+                    hover:bg-neutral-100
+                    transition-all
                   ">
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 rounded-xl p-1 bg-white/90 backdrop-blur-xl border-slate-200/50">
+                <DropdownMenuContent align="end" className="w-48 rounded-xl p-1 bg-white border-neutral-200">
                   {items.map((item, index) => (
                     <DropdownMenuItem
                       key={index}
@@ -114,28 +131,30 @@ const ModernCard: React.FC<ModernCardProps> = ({
           </div>
         </div>
 
-        {/* Bottom Content */}
-        <div className="transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
-          <h3 className="text-2xl font-bold text-white mb-2 leading-tight font-heading shadow-sm">
+        {/* Main Content - Centered */}
+        <div className="flex-1 flex flex-col justify-center space-y-3">
+          <h3 className="text-xl font-bold text-neutral-900 leading-tight tracking-tight">
             {name}
           </h3>
-          <p className="text-slate-200 text-sm line-clamp-2 mb-4 opacity-90 font-medium">
+          <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed">
             {description}
           </p>
-          
-          <div className="
-            flex items-center gap-4 pt-4 border-t border-white/10
-            opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100
-          ">
-            <button className="flex items-center gap-2 text-xs font-bold text-white/80 hover:text-white transition-colors">
-              <BookOpen className="w-4 h-4" />
-              <span>Open</span>
-            </button>
-            <button className="flex items-center gap-2 text-xs font-bold text-white/80 hover:text-white transition-colors">
-              <Calendar className="w-4 h-4" />
-              <span>Schedule</span>
-            </button>
-          </div>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="
+          flex items-center gap-3 pt-4 border-t border-neutral-100
+          opacity-60 group-hover:opacity-100 transition-opacity duration-300
+        ">
+          <button className={`flex items-center gap-1.5 text-xs font-medium ${accentColor.text} hover:underline transition-all`}>
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Open</span>
+          </button>
+          <div className="w-px h-3 bg-neutral-200" />
+          <button className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-700 transition-all">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Schedule</span>
+          </button>
         </div>
       </div>
     </Card>

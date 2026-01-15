@@ -3,6 +3,7 @@ import {Button} from "@/components/ui/button";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Bot, Send, Sparkles, Trash2, Copy, Check} from "lucide-react";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import { getApiUrl } from '@/lib/api-config';
 
 interface Message {
   id: string;
@@ -65,11 +66,11 @@ const Chat: React.FC<ChatProps> = ({ classroomDetails }) => {
     
     // Determine IDs from props or fallbacks
     // Use the first source's ID if available
-    const namespace = classroomDetails?.namespace || classroomDetails?.id || "a0281da8ad4f438793642d5924859a6d";
+    const namespace = classroomDetails?.sources[0]?.document;
     const sourceId = classroomDetails?.sources?.[0]?.source_id || classroomDetails?.sources?.[0]?.id || "17e3a65c-87e0-4cdc-aafa-3edc11c77266";
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/generate-content', {
+      const response = await fetch(getApiUrl('/api/generate-content'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

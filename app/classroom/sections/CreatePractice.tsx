@@ -11,12 +11,16 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Image as ImageIcon, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getApiUrl } from '@/lib/api-config';
 
 interface PracticeSession {
   id: string;
   name: string;
   description: string;
   image?: string;
+  status: string;
+  userMarks?: number;
+  totalMarks?: number;
 }
 
 const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetails }) => {
@@ -38,7 +42,7 @@ const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetail
     const classroomId = classroomDetails?.id || "7186c7de-0276-4c8c-a1b9-59b249019c29";
 
     try {
-      const response = await fetch(`http://localhost:8000/api/practices/classroom/${classroomId}`, {
+      const response = await fetch(getApiUrl(`/api/practices/classroom/${classroomId}`), {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -52,7 +56,10 @@ const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetail
           id: item.id,
           name: item.title,
           description: item.description,
-          image: item.file
+          image: item.file,
+          status: item.status,
+          userMarks: item.userMarks,
+          totalMarks: item.totalMarks
         }));
         setSessions(mappedData);
       } else {
@@ -97,7 +104,7 @@ const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetail
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/practices/create", {
+      const response = await fetch(getApiUrl("/api/practices/create"), {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${token}`
@@ -215,9 +222,32 @@ const PracticeSessions: React.FC<{ classroomDetails: any }> = ({ classroomDetail
                 <h3 className="text-lg font-bold text-slate-900 mb-2">
                   {session.name}
                 </h3>
-                <p className="text-sm text-slate-600 line-clamp-3">
+                <p className="text-sm text-slate-600 line-clamp-3 mb-4">
                   {session.description}
                 </p>
+
+                <div className="mb-4">
+                  {session.status === "Submitted" && (
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold border border-yellow-200">
+                      <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse" />
+                      Submitted & Pending Review
+                    </div>
+                  )}
+                  
+                  {session.status === "Evaluated" && (
+                     <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                      <div className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Score Achieved</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-emerald-700">
+                          {session.userMarks}
+                        </span>
+                        <span className="text-sm font-medium text-emerald-500">
+                          / {session.totalMarks}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <Button
                     onClick={() => router.push(`/classroom/${classroomDetails?.id || '1'}?set=practice&practiceid=${session.id}`)}

@@ -12,6 +12,7 @@ import CalendarHeatmap from 'react-calendar-heatmap';
 import 'react-calendar-heatmap/dist/styles.css';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Activity, Zap, Trophy, Award, Loader2, Calendar } from "lucide-react";
+import { getApiUrl } from '@/lib/api-config';
 
 // Our beautiful chart color palette
 const CHART_COLORS = {
@@ -34,7 +35,14 @@ interface PerformanceEntry {
 }
 
 
-const Progress = () => {
+interface ProgressProps {
+  classroomDetails?: {
+    id?: string;
+    classroomName?: string;
+  };
+}
+
+const Progress = ({ classroomDetails }: ProgressProps) => {
   const [practiceYear, setPracticeYear] = useState(new Date().getFullYear().toString());
   const [examYear, setExamYear] = useState(new Date().getFullYear().toString());
   const [curveYear, setCurveYear] = useState(new Date().getFullYear().toString());
@@ -48,6 +56,7 @@ const Progress = () => {
   const [loadingPerformance, setLoadingPerformance] = useState(false);
 
   const token = typeof window !== 'undefined' ? (localStorage.getItem("access_token") || "") : "";
+  const classroomId = classroomDetails?.id || "";
 
   const fetchStats = useCallback(async (type: 'practice' | 'exam', year: string) => {
     const isPractice = type === 'practice';
@@ -60,7 +69,7 @@ const Progress = () => {
     const endDate = `${year}-12-31`;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/${endpoint}/stats/daily?start_date=${startDate}&end_date=${endDate}`, {
+      const response = await fetch(getApiUrl(`/api/${endpoint}/stats/daily?start_date=${startDate}&end_date=${endDate}&classroom_id=${classroomId}`), {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -79,7 +88,7 @@ const Progress = () => {
     } finally {
       setLoader(false);
     }
-  }, [token]);
+  }, [token, classroomId]);
 
   const fetchPerformanceCurve = useCallback(async (year: string) => {
     setLoadingPerformance(true);
@@ -87,7 +96,7 @@ const Progress = () => {
     const endDate = `${year}-12-31`;
 
     try {
-      const response = await fetch(`http://localhost:8000/api/exams/stats/performance?start_date=${startDate}&end_date=${endDate}`, {
+      const response = await fetch(getApiUrl(`/api/exams/stats/performance?start_date=${startDate}&end_date=${endDate}&classroom_id=${classroomId}`), {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -106,7 +115,7 @@ const Progress = () => {
     } finally {
       setLoadingPerformance(false);
     }
-  }, [token]);
+  }, [token, classroomId]);
 
   useEffect(() => {
     fetchStats('practice', practiceYear);
@@ -120,6 +129,52 @@ const Progress = () => {
     fetchPerformanceCurve(curveYear);
   }, [curveYear, fetchPerformanceCurve]);
 
+  // Derived Statistics
+  const bestPerformance = React.useMemo(() => {
+    if (!performanceScoreData.length) return null;
+    return performanceScoreData.reduce((prev, current) => (prev.score > current.score) ? prev : current);
+  }, [performanceScoreData]);
+
+  const studyStreak = React.useMemo(() => {
+    if (!practiceData.length) return 0;
+    
+    const sortedDates = [...practiceData]
+      .filter(d => d.count > 0)
+      .map(d => new Date(d.date).getTime())
+      .sort((a, b) => b - a); // Descending
+
+    if (sortedDates.length === 0) return 0;
+
+    const today = new Date().setHours(0,0,0,0);
+    const yesterday = today - 86400000;
+    
+    // Check if the most recent practice was today or yesterday to keep streak alive
+    const lastPractice = new Date(sortedDates[0]).setHours(0,0,0,0);
+    if (lastPractice < yesterday) return 0;
+
+    let streak = 1;
+    let currentDate = lastPractice;
+
+    for (let i = 1; i < sortedDates.length; i++) {
+      const prevDate = new Date(sortedDates[i]).setHours(0,0,0,0);
+      const diff = (currentDate - prevDate) / (1000 * 60 * 60 * 24);
+      
+      if (diff === 1) {
+        streak++;
+        currentDate = prevDate;
+      } else if (diff === 0) {
+        continue; // Same day, ignore
+      } else {
+        break; // Gap found
+      }
+    }
+    return streak;
+  }, [practiceData]);
+
+  const totalPractice = React.useMemo(() => {
+    return practiceData.reduce((acc, curr) => acc + curr.count, 0);
+  }, [practiceData]);
+
   const yearOptions = ["2023", "2024", "2025", "2026"];
 
   // Custom Tooltip Component
@@ -130,7 +185,7 @@ const Progress = () => {
           <p className="font-semibold text-slate-900 mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm text-slate-700">
-              <span className="font-medium">{entry.name}:</span> {entry.value}
+              <span className="font-medium">{entry.name}:</span> {entry.value}%
             </p>
           ))}
         </div>
@@ -227,14 +282,14 @@ const Progress = () => {
                 startDate={new Date(`${practiceYear}-01-01`)}
                 endDate={new Date(`${practiceYear}-12-31`)}
                 values={practiceData}
-                classForValue={(value: HeatmapValue) => {
+                classForValue={(value: any) => {
                   if (!value || value.count === 0) return 'color-practice-0';
                   return `color-practice-${Math.min(value.count, 4)}`;
                 }}
-                tooltipDataAttrs={(value: HeatmapValue) => {
+                tooltipDataAttrs={(value: any) => {
                   return {
                     'data-tip': value && value.date ? `${value.date}: ${value.count} sessions` : 'No sessions',
-                  };
+                  } as any;
                 }}
               />
             </div>
@@ -279,14 +334,14 @@ const Progress = () => {
                 startDate={new Date(`${examYear}-01-01`)}
                 endDate={new Date(`${examYear}-12-31`)}
                 values={examData}
-                classForValue={(value: HeatmapValue) => {
+                classForValue={(value: any) => {
                   if (!value || value.count === 0) return 'color-exam-0';
                   return 'color-exam-3';
                 }}
-                tooltipDataAttrs={(value: HeatmapValue) => {
+                tooltipDataAttrs={(value: any) => {
                   return {
                     'data-tip': value && value.date ? `${value.date}: Exam taken` : 'No exam',
-                  };
+                  } as any;
                 }}
               />
             </div>
@@ -370,31 +425,51 @@ const Progress = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              {/* Best Performance Card */}
               <div className="bg-white p-3 rounded-xl border border-green-200 flex items-center gap-4">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                   <Trophy className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Perfect Score!</h4>
-                  <p className="text-xs text-slate-600">Aced the OS Threads quiz</p>
+                  <h4 className="font-bold text-slate-900 text-sm">Top Performer</h4>
+                  <p className="text-xs text-slate-600">
+                    {bestPerformance 
+                      ? `Achieved ${bestPerformance.score}% in ${bestPerformance.name.split('-').slice(1).join('/')} Exam`
+                      : "No exam data yet"
+                    }
+                  </p>
                 </div>
               </div>
+
+              {/* Practice Volume Card */}
               <div className="bg-white p-3 rounded-xl border border-orange-200 flex items-center gap-4">
                 <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                   <Zap className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Speed Demon</h4>
-                  <p className="text-xs text-slate-600">Practice completed in record time</p>
+                  <h4 className="font-bold text-slate-900 text-sm">On a Roll</h4>
+                  <p className="text-xs text-slate-600">
+                    {totalPractice > 0 
+                      ? `Completed ${totalPractice} practice sessions this year`
+                      : "Start practicing to build stats"
+                    }
+                  </p>
                 </div>
               </div>
+
+              {/* Streak Card */}
               <div className="bg-white p-3 rounded-xl border border-purple-200 flex items-center gap-4">
                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                   <Award className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">7-Day Streak</h4>
-                  <p className="text-xs text-slate-600">Learning consistency maintained!</p>
+                  <h4 className="font-bold text-slate-900 text-sm">Consistency Champion</h4>
+                  <p className="text-xs text-slate-600">
+                    {studyStreak > 0
+                      ? `You've studied for ${studyStreak} day${studyStreak === 1 ? '' : 's'} straight!`
+                      : "Start a study streak today!"
+                    }
+                  </p>
                 </div>
               </div>
             </div>
