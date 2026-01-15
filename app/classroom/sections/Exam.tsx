@@ -47,8 +47,8 @@ const Exam = () => {
   const [countdownTime, setCountdownTime] = useState(10);
   
   // Timer State
-  const EXAM_DURATION = 1 * 60; // 30 minutes in seconds (currently set to 1 min for testing as per user's edit)
-  const [timeLeft, setTimeLeft] = useState(EXAM_DURATION);
+  const [totalDuration, setTotalDuration] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [showEndModal, setShowEndModal] = useState(false);
 
   const formatTime = (totalSeconds: number) => {
@@ -172,6 +172,21 @@ const Exam = () => {
         if (response.ok) {
           const data = await response.json();
           setExamData(data);
+          
+          // Calculate dynamic duration
+          const duration = data.questions.reduce((acc: number, q: Question) => {
+            if (q.type === 'Mcq') return acc + (2 * 60);
+            if (q.type === 'Short') return acc + (5 * 60);
+            if (q.type === 'Long') return acc + (10 * 60);
+            return acc + (2 * 60); // Default to 2 mins if type is unknown
+          }, 0);
+          
+          setTotalDuration(duration);
+          // Only set timeLeft if not evaluated and we strictly want to reset/init it
+          if (data.status !== "Evaluated") {
+             setTimeLeft(duration);
+          }
+
           // If exam is evaluated, set user answers to what was submitted
           if (data.status === "Evaluated") {
             setIsCountingDown(false); // Disable pre-start countdown
@@ -575,7 +590,7 @@ const Exam = () => {
             <div className="mt-6 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                 <div 
                 className={`h-full transition-all duration-1000 ${timeLeft < 300 ? 'bg-rose-500' : 'bg-orange-500'}`}
-                style={{ width: `${(timeLeft / EXAM_DURATION) * 100}%` }}
+                style={{ width: `${(timeLeft / totalDuration) * 100}%` }}
                 />
             </div>
             </div>
@@ -590,11 +605,11 @@ const Exam = () => {
             </div>
             <ul className="space-y-4">
                 {[
-                "Analyze question structure thoroughly",
-                "Maintain consistent high performance",
-                "Review logic paths frequently",
-                "Ensure zero external interference",
-                "Verify final marks allocation"
+                "MCQ Questions: 2 minutes allocation",
+                "Short Questions: 5 minutes allocation",
+                "Long Questions: 10 minutes allocation",
+                "Timer assumes this optimal distribution",
+                "Auto-submission when timer hits zero"
                 ].map((tip, i) => (
                 <li key={i} className="flex items-center gap-3 text-orange-800 font-bold text-sm">
                     <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />

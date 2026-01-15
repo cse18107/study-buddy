@@ -18,6 +18,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     try {
       await signup(email, password, fullName);
     } catch (err: any) {
